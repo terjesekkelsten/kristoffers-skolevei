@@ -845,24 +845,44 @@ SC.hester={walk:{x:8,y:304,w:624,h:50},leaves:true,dim:.12,entries:{left:[20,348
   render(c){c.drawImage(BG.hester,0,0);[...HS].sort((a,b)=>a.y-b.y).forEach(h=>drawHorse(c,h.x,h.y,h.dir,h,T));c.drawImage(BG.fence,0,0);
     const L=ptSprites();for(const p of PETS.hester)L.push({y:p.y,d:()=>drawPet(c,p)});L.push({y:K.y,d:()=>drawKid(c,K.x,K.y,K.dir,stepF())});L.sort((a,b)=>a.y-b.y).forEach(o=>o.d());},
   top(c){if(S.rainT>1.5){c.fillStyle='rgba(190,210,255,.7)';for(let i=0;i<90;i++){const x=(i*97+T*70)%W,y=(i*53+T*460)%H;c.fillRect(x|0,y|0,1,7);}}if(K.x>470)arrow(c,626,346,'right');}};
+/* ---------- søppel i skolegården og Gullkosten ---------- */
+const TRASH=[{x:62,y:336,k:'banan',n:'et bananskall'},{x:196,y:374,k:'boks',n:'en tom brusboks'},{x:304,y:300,k:'papir',n:'et godtepapir'},{x:434,y:322,k:'eple',n:'en eplekjerne'},{x:590,y:346,k:'pose',n:'en plastpose'},{x:378,y:384,k:'kartong',n:'en juicekartong'}];
+function trashSprite(c,X,Y,k){c.save();c.translate(X,Y);c.scale(2,2);const x=0,y=0;R(c,x-7,y+1,14,1,'rgba(0,0,0,.22)');
+  if(k==='banan'){R(c,x-6,y-2,12,2,'#e8d030');R(c,x-7,y-4,3,3,'#e8d030');R(c,x+4,y-4,3,3,'#d8c020');R(c,x-1,y-5,3,4,'#f0e050');R(c,x-8,y-5,2,2,'#6a4a1a');R(c,x+6,y-5,2,2,'#6a4a1a');R(c,x-4,y-1,8,1,'#b8a018');}
+  else if(k==='boks'){R(c,x-5,y-4,10,5,'#d02020');R(c,x-6,y-4,1,5,'#c8c8d0');R(c,x+5,y-4,1,5,'#c8c8d0');R(c,x-4,y-3,8,1,'#ff6060');R(c,x-2,y-2,3,1,'#ffffff');R(c,x-4,y,8,1,'#901010');}
+  else if(k==='papir'){R(c,x-4,y-3,8,3,'#e04090');R(c,x-6,y-4,2,2,'#f0f0f0');R(c,x+4,y-1,2,2,'#f0f0f0');R(c,x-2,y-3,3,1,'#ffd21a');R(c,x-3,y-1,6,1,'#a02060');}
+  else if(k==='eple'){R(c,x-2,y-6,4,7,'#f0e0b0');R(c,x-3,y-6,6,2,'#c02020');R(c,x-3,y-1,6,2,'#c02020');R(c,x,y-8,1,2,'#6a4a1a');R(c,x-1,y-4,1,2,'#6a4a1a');}
+  else if(k==='pose'){R(c,x-6,y-6,12,7,'#e8e8ec');R(c,x-5,y-8,3,3,'#e8e8ec');R(c,x+2,y-8,3,3,'#e8e8ec');R(c,x-4,y-4,8,1,'#c8c8d0');R(c,x-2,y-2,5,1,'#c8c8d0');R(c,x-6,y-1,12,1,'#b0b0b8');R(c,x+2,y-5,2,2,'#2a6ad8');}
+  else{R(c,x-4,y-9,8,9,'#ff9020');R(c,x-4,y-9,8,2,'#ffffff');R(c,x-2,y-6,4,3,'#40a040');R(c,x+2,y-12,1,4,'#f0f0f0');R(c,x+3,y-12,1,1,'#e04040');R(c,x+3,y-8,1,8,'#d07010');}c.restore();}
+function trashLeft(){return S.trash?S.trash.filter(q=>!q.got).length:0;}
+function pickTrash(i){const q=S.trash&&S.trash[i];if(!q||q.got)return;q.got=true;SFX.chime();const n=S.trash.filter(o=>o.got).length,N=S.trash.length;
+  if(n<N){say('Du plukket opp '+TRASH[i].n+'. '+n+' av '+N+'.');return;}
+  S.gullT=8;SFX.fanfare();if(DB){zGive(3);zStk('gullkost');}
+  talk(null,'GULLKOSTEN! Du har plukket opp all søppelen i skolegården. Takk for at du holder Jong skole ren! Du får 3 ekstra billetter.');}
+function gullkost(c){const a=Math.min(1,S.gullT);c.globalAlpha=a;R(c,190,64,260,150,'#1c1630');R(c,190,64,260,3,'#f0c040');R(c,190,211,260,3,'#f0c040');R(c,190,64,3,150,'#f0c040');R(c,447,64,3,150,'#f0c040');
+  txt(c,'GULLKOSTEN',241,78,'#ffd84a',4);
+  line(c,286,104,330,160,4,'#c8901c');line(c,287,103,331,159,1,'#ffe080');R(c,282,100,8,6,'#e8b830');
+  for(let i=0;i<10;i++){const bx=316+i*3-6,by=154+(i%2);R(c,bx,by,3,26-Math.abs(i-4)*2,i%2?'#f0c040':'#d89a20');}R(c,312,150,30,6,'#a87010');R(c,312,152,30,1,'#ffe080');
+  for(let i=0;i<8;i++){const ang=i/8*6.283+T*1.5,r=58+((T*3+i)%2)*6,sx=Math.round(330+Math.cos(ang)*r),sy=Math.round(150+Math.sin(ang)*r*.6);if((T*4+i)%2<1.3){R(c,sx-2,sy,5,1,'#fff6c0');R(c,sx,sy-2,1,5,'#fff6c0');}}
+  txt(c,'+3 BILLETTER',282,194,'#ffffff',2);c.globalAlpha=1;}
 SC.skole={walk:{x:16,y:282,w:608,h:104},entries:{in:[24,350,1]},
-  enter(){kids=[{x:330,y:340,dir:1,look:{jacket:'#e06020',pants:'#333',hat:'#2060c0',band:'#60a0ff',hair:'#e0c060'},jump:true},{x:120,y:316,dir:1,look:{jacket:'#20a060',pants:'#2a2a4a',hat:null,hair:'#3a2010'},run:true}];},
-  intro(){say('Du er framme i skolegården på Jong skole!');},
-  hot:[{x:24,y:160,w:180,h:146,ax:150,ay:304,act(){play();}},
+  enter(){if(!S.trash)S.trash=TRASH.map(()=>({got:false}));kids=[{x:330,y:340,dir:1,look:{jacket:'#e06020',pants:'#333',hat:'#2060c0',band:'#60a0ff',hair:'#e0c060'},jump:true},{x:120,y:316,dir:1,look:{jacket:'#20a060',pants:'#2a2a4a',hat:null,hair:'#3a2010'},run:true}];},
+  intro(){say('Du er framme i skolegården på Jong skole! Noen har slengt søppel i gården. Klarer du å plukke opp alt?');},
+  hot:[...TRASH.map((q,i)=>({x:q.x-20,y:q.y-26,w:40,h:32,ax:clamp(q.x-16,20,620),ay:clamp(q.y+2,284,384),hidden:()=>!S.trash||S.trash[i].got,act(){pickTrash(i);}})),{x:24,y:160,w:180,h:146,ax:150,ay:304,act(){play();}},
        {x:266,y:212,w:36,h:70,ax:310,ay:288,hidden:()=>S.clock>=GONE,act(){greet();}},
        {x:218,y:214,w:46,h:52,ax:240,ay:284,act(){enterSchool();}},
        {x:418,y:24,w:80,h:60,look:true,act(){talk(null,'Det norske flagget vaier på flaggstanga ved skolen.');}},
        {x:436,y:88,w:188,h:40,look:true,act(){talk(null,'Jong skole. Her går du i første klasse!');}}],
-  hint(){talk(null,S.clock>=GONE?'Malin er i klasserommet. Gå inn døra.':S.greeted?'Gå inn døra.':'Gå bort til Malin og si god morgen.');},
-  update(dt){for(const k of kids){if(k.run){k.x+=k.dir*60*dt;if(k.x>260)k.dir=-1;if(k.x<60)k.dir=1;}}
+  hint(){const n=trashLeft();talk(null,(S.clock>=GONE?'Malin er i klasserommet. Gå inn døra.':S.greeted?'Gå inn døra.':'Gå bort til Malin og si god morgen.')+(n?' Det ligger '+n+(n===1?' søppelbit':' søppelbiter')+' i skolegården. Trykk på dem for å plukke dem opp.':''));},
+  update(dt){if(S.gullT>0)S.gullT-=dt;for(const k of kids){if(k.run){k.x+=k.dir*60*dt;if(k.x>260)k.dir=-1;if(k.x<60)k.dir=1;}}
     if(S.clock>=GONE&&!S.flags.gone){S.flags.gone=true;say('Klokka er halv ni. Malin har gått inn i klasserommet.');}},
   sprites(){const L=kids.map(k=>({y:k.y,d:()=>person(g,k.x,k.y-(k.jump?Math.abs(Math.sin(T*5))*10:0),k.dir,k.run?(T*8|0)%2+1:0,k.look)}));
     if(S.clock<GONE)L.push({y:276,d:()=>drawMalin(g,282,276,1,T)});
     if(S.anim&&S.anim.type==='play'){const b=Math.abs(Math.sin(S.anim.t*6))*12;L.push({y:500,d:()=>drawKid(g,110,232-b,(S.anim.t*2|0)%2?1:-1,0)});}
     else L.push({y:K.y,d:()=>drawKid(g,K.x,K.y,K.dir,stepF())});return L;},
   noK:true,
-  dyn(c){flag(c,426,34,3,T);},
-  top(c){if(S.anim)return;if(S.clock<GONE&&!S.greeted)arrow(c,284,206,'down');else arrow(c,240,206,'down');}};
+  dyn(c){flag(c,426,34,3,T);if(S.trash)S.trash.forEach((q,i)=>{if(q.got)return;const t=TRASH[i];trashSprite(c,t.x,t.y,t.k);if((T+i*.9)%3<.25){R(c,t.x+8,t.y-24,2,9,'#ffffff');R(c,t.x+4,t.y-20,10,2,'#ffffff');}});},
+  top(c){if(S.gullT>0)gullkost(c);if(S.anim)return;if(S.clock<GONE&&!S.greeted)arrow(c,284,206,'down');else arrow(c,240,206,'down');}};
 const PETS={
   ute:[{type:'cat',x:562,y:254,col:'#d07a20',stripe:'#a85010',name:'Pusur',ax:560,ay:292}],
   kiwi:[{type:'dog',x:212,y:212,col:'#e0b060',ear:'#b88030',name:'Bamse',ax:190,ay:206,side:'top',tied:true}],
@@ -1189,7 +1209,8 @@ const STK=[
  ['pen_rune','👓','Slo rektor','Vant straffekonkurransen mot Rektor Kathrine'],
  ['pen_fem','🎯','Skarpskytter','Scoret på alle de fem første straffene'],
  ['pen_redd','🧤','Superkeeper','Reddet tre straffer i én kamp'],
- ['maake','🐦','Måka Magnus','Måka stjal ballen din']];
+ ['maake','🐦','Måka Magnus','Måka stjal ballen din'],
+ ['gullkost','🧹','Gullkosten','Plukket opp all søppelen i skolegården']];
 function zStk(id){const p=PR();if(p.stk[id])return false;p.stk[id]=Date.now();const s=STK.find(x=>x[0]===id);if(s){zToast(s[1]+' Nytt klistremerke: '+s[2]);setTimeout(()=>SFX.wii(),300);}saveDB();return true;}
 function zGive(n){const p=PR();p.tickets+=n;p.earned=(p.earned||0)+n;SFX.chime();zToast('🎟 +'+n+(n>1?' friminuttbilletter':' friminuttbillett'));zStk('billett');if(p.earned>=10)zStk('rik');saveDB();updStatus();}
 function zTask(){const p=PR();p.half=(p.half||0)+1;if(p.half>=2){p.half=0;zGive(1);}else saveDB();updStatus();}
@@ -2030,22 +2051,27 @@ function sjEval(s){const b=s.b;let sc=0,mat=0;
     const v=SJV[l]+(l==='k'&&end?SJPST.ke:SJPST[l])[idx];sc+=w?v:-v;}
   return s.t==='w'?sc:-sc;}
 function sjOrder(M){for(const m of M)m.o=(m.c?10*SJV[m.c.toLowerCase()]-SJV[m.p.toLowerCase()]/10+1000:0)+(m.pr?SJV[m.pr.toLowerCase()]:0);return M.sort((a,c)=>c.o-a.o);}
-let SJNODES=0;
-function sjQ(s,a,be,d){SJNODES++;const st=sjEval(s);if(st>=be)return be;if(st>a)a=st;if(d>5)return a;
+let SJNODES=0,SJDL=0;
+function sjQ(s,a,be,d){if((++SJNODES&1023)===0&&SJDL&&Date.now()>SJDL)throw 'tid';const st=sjEval(s);if(st>=be)return be;if(st>a)a=st;if(d>5)return a;
   for(const m of sjOrder(sjLegal(s,true))){sjMake(s,m);const v=-sjQ(s,-be,-a,d+1);sjUndo(s,m);if(v>=be)return be;if(v>a)a=v;}
   return a;}
-function sjNeg(s,d,a,be,ply,q){SJNODES++;const M=sjLegal(s,false);
+function sjNeg(s,d,a,be,ply,q){if(d<=0)return q?sjQ(s,a,be,0):sjEval(s);
+  if((++SJNODES&1023)===0&&SJDL&&Date.now()>SJDL)throw 'tid';const M=sjLegal(s,false);
   if(!M.length)return sjInCheck(s,s.t==='w')?-99999+ply:0;if(s.hm>=100)return 0;
-  if(d<=0)return q?sjQ(s,a,be,0):sjEval(s);
   for(const m of sjOrder(M)){sjMake(s,m);const v=-sjNeg(s,d-1,-be,-a,ply+1,q);sjUndo(s,m);if(v>=be)return be;if(v>a)a=v;}
   return a;}
 /* o: d=dybde, q=slagsjekk på slutten, noise=tilfeldighet i poeng, rnd=sjanse for helt tilfeldig trekk */
 function sjBest(s,o){const M=sjOrder(sjLegal(s,false));if(!M.length)return null;
   if(o.rnd&&Math.random()<o.rnd)return M[Math.random()*M.length|0];
-  const nz=o.noise||0;let best=null,bs=-1e9,raw=-1e9;
-  for(const m of M){sjMake(s,m);const lo=raw>-1e8?raw-2*nz-1:-1e9;let v=-sjNeg(s,o.d-1,-1e9,-lo,1,o.q);sjUndo(s,m);
-    if(v>raw)raw=v;const n=v+(Math.random()*2-1)*nz;if(n>bs){bs=n;best=m;}}
-  return best;}
+  const nz=o.noise||0;
+  const run=(d,st)=>{let best=null,bs=-1e9,raw=-1e9;for(const m of M){sjMake(st,m);const lo=raw>-1e8?raw-2*nz-1:-1e9;const v=-sjNeg(st,d-1,-1e9,-lo,1,o.q);sjUndo(st,m);
+    m.sc=v;if(v>raw)raw=v;const n=v+(Math.random()*2-1)*nz;if(n>bs){bs=n;best=m;}}return best;};
+  if(!o.time)return run(o.d,s);
+  /* tidsstyrt: regner dypere og dypere til tida er ute, beste trekk fra forrige runde sjekkes først */
+  let pick=M[0];SJDL=Date.now()+o.time;
+  try{for(let d=1;d<=o.d;d++){const b=run(d,{b:s.b.slice(),t:s.t,cr:s.cr,ep:s.ep,hm:s.hm});pick=b;M.sort((x,y)=>y.sc-x.sc);if(Math.abs(b.sc)>90000)break;}}
+  catch(e){if(e!=='tid')throw e;}finally{SJDL=0;}
+  return pick;}
 function sjKey(s){return s.b.map(p=>p||'.').join('')+s.t+s.cr+s.ep;}
 function sjLowMat(s){const P=s.b.filter(p=>p&&p!=='k'&&p!=='K');if(!P.length)return true;if(P.length===1&&/[nbNB]/.test(P[0]))return true;return false;}
 
@@ -2054,6 +2080,7 @@ STK.push(
  ['sj_nils','♟️','Sjakk: Nils','Satte Nybegynner-Nils sjakkmatt'],
  ['sj_sofie','🧠','Sjakk: Sofie','Satte Sjakk-Sofie sjakkmatt'],
  ['sj_berit','📚','Sjakk: Berit','Satte Bibliotekar Berit sjakkmatt'],
+ ['sj_even','👑','Sjakkmester','Satte Even sjakkmatt'],
  ['sj_rokade','🏰','Rokade','Gjorde rokade i et sjakkparti'],
  ['sj_dronning','👸','Ny dronning','Gjorde en bonde om til dronning'],
  ['st_vant','🪜','Stigespill','Vant stigespillet på SFO'],
@@ -2070,7 +2097,10 @@ const SJO={
    win:'Sofie vant. Hun sier du skal passe på brikkene som ingen passer på.',lose:'Sofie gir deg hånden og sier «godt spilt». Det sier ordentlige sjakkspillere.',draw:'Sofie sier uavgjort mot henne er like bra som å vinne mot de fleste.'},
  berit:{n:'Bibliotekar Berit',short:'Berit',e:'📚',col:'#7a4ab0',d:3,q:true,noise:12,rnd:0,undo:false,s:'Har lest alle sjakkbøkene i biblioteket. To ganger.',lock:'sj_sofie',lockSay:'Berit spiller bare mot dem som har satt Sjakk-Sofie matt.',
    hello:['Hysj. Her tenkes det.','Jeg har lest alle sjakkbøkene i biblioteket. To ganger.'],cap:['Den står i kapittel fire.','Hysj. Det var bare en bonde. Eller noe.'],lost:['Det trekket står ikke i noen av bøkene mine!','Interessant. Veldig interessant.'],check:['Sjakk. Hysj.'],inCheck:['Hm. Det må jeg slå opp.'],
-   win:'Berit vant. Hun låner deg gjerne en sjakkbok. Lånetiden er tre uker.',lose:'Berit hvisker: «Det der skal inn i en bok.» Så skriver hun det ned.',draw:'Berit sier uavgjort. Det er sjelden. Hun skal skrive det ned.'}};
+   win:'Berit vant. Hun låner deg gjerne en sjakkbok. Lånetiden er tre uker.',lose:'Berit hvisker: «Det der skal inn i en bok.» Så skriver hun det ned.',draw:'Berit sier uavgjort. Det er sjelden. Hun skal skrive det ned.'},
+ even:{n:'Even',short:'Even',e:'👑',col:'#c8961c',d:6,q:true,noise:0,rnd:0,time:1500,undo:false,s:'Den beste sjakkspilleren på hele Jong skole',lock:'sj_berit',lockSay:'Even spiller bare mot dem som har satt Bibliotekar Berit sjakkmatt.',
+   hello:['Hei! Jeg har hørt at du slo Berit. Nå er det min tur.','Klar for et ordentlig parti?'],cap:['Den tar jeg, takk.','Der falt en brikke.'],lost:['Oi! Godt trekk.','Den så jeg ikke komme.'],check:['Sjakk!','Sjakk. Hvor skal kongen gå nå?'],inCheck:['Hm. Du er god.','Nå må jeg tenke ekstra.'],
+   win:'Even vant. Han sier du ble vanskeligere å slå for hvert trekk.',lose:'Du slo Even! Han sier du er den nye sjakkmesteren på Jong skole.',draw:'Uavgjort mot Even! Det er det nesten ingen som klarer.'}};
 const SJINFO={p:'Bonde: går ett skritt rett frem, to fra start. Slår på skrå. Når den kommer helt over, blir den en ny brikke.',
  n:'Hest: hopper i en L, to frem og ett til siden. Den kan hoppe over andre brikker.',b:'Løper: går så langt den vil på skrå.',
  r:'Tårn: går så langt det vil rett frem, bakover og til siden.',q:'Dronning: går så langt hun vil i alle retninger. Den sterkeste brikken!',
