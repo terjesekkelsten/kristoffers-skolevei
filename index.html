@@ -1149,11 +1149,11 @@ const STK=[
  ['hysj','🤫','Hysj!','Fikk hysj av bibliotekaren'],
  ['ah_nils','🐣','Slo Nils','Vant airhockey mot Nybegynner-Nils'],
  ['ah_rakel','⚡','Slo Rakel','Vant airhockey mot Lynrask Rakel'],
- ['ah_kare','🔑','Slo Kåre','Slo vaktmesteren i airhockey'],
+ ['ah_kare','🚀','Slo SFO-Håkon','Slo SFO-Håkon i airhockey'],
  ['ah_null','🧱','Murvegg','Vant airhockey uten å slippe inn mål'],
  ['pen_lise','👧','Slo Lise','Vant straffekonkurransen mot Lille Lise'],
  ['pen_sander','🧑','Slo Sander','Vant straffekonkurransen mot Store Sander'],
- ['pen_rune','🧦','Slo rektor','Vant over Rektor Rune og lykkesokkene'],
+ ['pen_rune','👓','Slo rektor','Vant straffekonkurransen mot Rektor Kathrine'],
  ['pen_fem','🎯','Skarpskytter','Scoret på alle de fem første straffene'],
  ['pen_redd','🧤','Superkeeper','Reddet tre straffer i én kamp'],
  ['maake','🐦','Måka Magnus','Måka stjal ballen din']];
@@ -1163,14 +1163,14 @@ function zTask(){const p=PR();p.half=(p.half||0)+1;if(p.half>=2){p.half=0;zGive(
 function zModuleDone(){zStk('modul');if(CL&&CL.firstOk>=5)zStk('stjerner');}
 function zRouteReward(st){if(st>=3)zStk('trafikk');const n=st>=3?2:st>=2?1:0;if(n){zGive(n);return '  ·  +'+n+' 🎟';}return '';}
 function zPay(cb){const p=PR();if(CHEAT){cb();return;}if(p.tickets>=1){p.tickets--;saveDB();updStatus();zToast('🎟 −1 billett');cb();return;}
-  ask('vakt','Ingen billett, ingen spill. Det står i reglementet, side fire. Jeg skrev det selv. To riktige oppgaver i klasserommet gir én billett.',['Til klasserommet','Tilbake'],i=>{if(i===0)startClass();});}
+  ask('vakt','Ingen billett, ingen spill. Det gjelder i hele galaksen. To riktige oppgaver i klasserommet gir én billett.',['Til klasserommet','Tilbake'],i=>{if(i===0)startClass();});}
 function zStatus(){if(!DB||!S)return;const sc=SC[S.scene];const hd=!!(sc&&sc.hd);const t=PR().tickets;$('bar').classList.toggle('ext',hd);
   if(hd){$('sPts').textContent='🎟 '+t+(t===1?' billett':' billetter');$('sTitle').textContent='Jong skole';$('where').textContent=(PLACE[S.scene]||'')+'  ·  '+CH.name;}
   else if(S.scene==='klasse'){$('sPts').textContent+='   🎟 '+t;}}
 function zPortrait(c,who){
   if(who==='bib'){R(c,6,6,12,13,'#F6D0B0');R(c,5,3,14,5,'#a8a8b8');R(c,9,0,6,4,'#a8a8b8');R(c,7,10,4,3,'#333');R(c,13,10,4,3,'#333');R(c,8,11,2,1,'#cfefff');R(c,14,11,2,1,'#cfefff');R(c,11,11,2,1,'#333');R(c,10,16,4,1,'#b04060');R(c,4,20,16,4,'#7a4ab0');R(c,11,20,2,4,'#e8dcf8');}
-  if(who==='vakt'){R(c,6,6,12,13,'#F0C098');R(c,4,3,16,5,'#2a4a8a');R(c,3,7,11,2,'#2a4a8a');R(c,8,10,2,2,'#111');R(c,14,10,2,2,'#111');R(c,7,14,10,2,'#8a8a8a');R(c,4,20,16,4,'#3a5aa0');R(c,15,21,3,2,'#e0c040');}zPortrait2(c,who);}
-Object.assign(WHO,{bib:'Bibliotekar Berit',vakt:'Vaktmester Kåre'});
+  if(who==='vakt'){R(c,6,6,12,13,'#F2CDA8');R(c,5,2,14,5,'#7a3a22');R(c,4,5,3,9,'#7a3a22');R(c,17,5,3,8,'#7a3a22');R(c,6,6,7,2,'#7a3a22');R(c,12,6,3,1,'#7a3a22');R(c,8,10,2,2,'#111');R(c,14,10,2,2,'#111');R(c,10,15,4,1,'#a04a3a');R(c,4,20,16,4,'#6e1f2a');R(c,10,20,4,4,'#1a1a22');R(c,5,21,2,2,'#8a2f3a');R(c,17,21,2,2,'#8a2f3a');}zPortrait2(c,who);}
+Object.assign(WHO,{bib:'Bibliotekar Berit',vakt:'SFO-Håkon'});
 Object.assign(PLACE,{hub:'Skolekartet',meny:'',bibl:'Biblioteket',ah:'Airhockey',straffe:'Straffespark',album:'Albumet'});
 
 /* ---------- extra classroom modules (5A, 5B) ---------- */
@@ -1342,7 +1342,7 @@ SC.meny=zScene({hd:zMenuDraw,tap(x,y){zMenuTap(x,y);return true;},hint(){if(MENU
 function zAhIcon(cx,cy){fRR(cx-48,cy-30,96,60,12,'#b8322a');fRR(cx-42,cy-24,84,48,9,'#eaf5fb');hx.fillStyle='#d23a3a';hx.fillRect(cx-1,cy-24,2,48);circ(cx-20,cy+4,10,'#3a7ad8');circ(cx-20,cy+4,5,'#6a9af0');circ(cx+4,cy-8,6,'#1a1a1a');circ(cx+24,cy+6,10,'#d23a3a');circ(cx+24,cy+6,5,'#f07a7a');}
 function zMenuSpill(){zMenu({title:'Spillrommet',theme:'spill',say:'Spillrommet! Sjakk kommer snart.',items:[
   {t:'Airhockey',s:'Dra den runde slageren og skyt pucken i mål',draw:zAhIcon,col:'#c0392b',cost:'1 🎟',act:zAhMenu},
-  {t:'Fussball',s:'Vaktmesteren fant skrutrekkeren',draw:zFbIcon,col:'#2e8a4a',cost:'1 🎟',act:zFbMenu},
+  {t:'Fussball',s:'SFO-Håkon har pusset stengene',draw:zFbIcon,col:'#2e8a4a',cost:'1 🎟',act:zFbMenu},
   {t:'Sjakk',e:'♟️',s:'Brikkene er på vei',col:'#3a3a48',soon:true,soonSay:'Sjakkbrettet kommer snart. Noen har spist opp en svart bonde. Jeg mistenker måka.'}]});}
 function zMenuGard(){zMenu({title:'Skolegården',theme:'gard',items:[
   {t:'Straffespark',e:'🥅',s:'Skyt fem straffer og stå i mål fem ganger',col:'#2e8a4a',cost:'1 🎟',act:zPkMenu},
@@ -1477,8 +1477,8 @@ const AHO={
    hello:['Hei! Er det pucken som er den lille svarte?','Jeg har øvd masse. I hodet.'],score:['Oi! Var det meg?','Jeg skjønner ikke hvordan det skjedde.'],conc:['Den var rask!','Jeg trodde pucken var en sjokoladekjeks.'],win:['Jeg vant! Jeg må ringe mormor.'],lose:['Du er god! Kan du lære meg?']},
  rakel:{n:'Lynrask Rakel',short:'Rakel',e:'⚡',col:'#9a40c0',sp:380,re:.2,er:20,s:'Raskeste hånd i 4. klasse',lock:'ah_nils',lockSay:'Slå Nybegynner-Nils først, så tør Rakel å spille mot deg.',
    hello:['Blunk, og du går glipp av det!','Jeg er så rask at jeg av og til tar igjen meg selv.'],score:['Zoom!','For raskt for deg?'],conc:['Hæ? Hvordan gjorde du det?','Jeg blunket. Det teller ikke.'],win:['Lynrask vinner igjen!'],lose:['Du er jo raskere enn meg. Det er ikke lov.']},
- kare:{n:'Vaktmester Kåre',short:'Kåre',e:'🔑',col:'#e06a10',sp:560,re:.1,er:9,s:'Ubeseiret siden 1987',lock:'ah_rakel',lockSay:'Kåre spiller bare mot dem som har slått Lynrask Rakel. Det står i reglementet.',
-   hello:['Ingen har slått meg siden 1987. Da var det strømbrudd.','Jeg spiller med vaktmesterhansken. Den har sett ting.'],score:['Det knepet lærte jeg i 1987.','Vaktmesterknep nummer sju.'],conc:['Hm. Det var flaks.','Jeg skylder på nøklene i lomma.','Nå ble jeg litt imponert.'],win:['Ubeseiret fortsatt. Jeg skal skrive det i loggboka.'],lose:['Første tap siden 1987! Jeg må låse meg inn på vaktmesterkontoret og tenke. Hvis jeg finner nøklene.']}};
+ kare:{n:'SFO-Håkon',short:'Håkon',e:'🚀',col:'#8a2433',sp:560,re:.1,er:9,s:'Star Wars-fan. Ubeseiret i hele galaksen.',lock:'ah_rakel',lockSay:'SFO-Håkon spiller bare mot dem som har slått Lynrask Rakel. Slik er reglene i galaksen.',
+   hello:['Velkommen til spillrommet, unge padawan!','Jeg har øvd med lyssverd. Airhockey er nesten det samme.'],score:['Kraften er med meg!','Rett gjennom hyperrommet!'],conc:['Jeg kjente en forstyrrelse i Kraften.','Den pucken gikk i lysets hastighet!','Kraften er sterk i deg.'],win:['Ubeseiret i hele galaksen. Foreløpig.'],lose:['Du slo meg! Nå er du mesteren, og jeg er padawanen.']}};
 function zAhMenu(){zMenu({title:'Airhockey',theme:'spill',back:zMenuSpill,backLabel:'Spillrommet',say:'Velg motstander. Én kamp koster én billett.',
   items:Object.keys(AHO).map(id=>{const o=AHO[id];return{t:o.n,e:o.e,s:o.s,col:o.col,cost:'1 🎟',done:!!PR().stk['ah_'+id],locked:!!(o.lock&&!PR().stk[o.lock]&&!CHEAT),lockSay:o.lockSay,act:()=>zPay(()=>ahStart(id))};})});}
 const AT={x:40,y:44,w:560,h:340},PRAD=15,MRAD=26,GH=136,AMAX=1000;
@@ -1552,8 +1552,8 @@ const PKO={
    win:'Lise vant! Hun sier hun bare var heldig, og så danset hun litt.',lose:'Lise sier hun skal si hvor hun skyter neste gang også. Kanskje.'},
  sander:{n:'Store Sander',short:'Sander',e:'🧑',col:'#2f6fd0',hair:'#3a2010',reach:56,read:.35,ft:.74,miss:.12,acc:.65,s:'Går i 7. klasse og har gele i håret',lock:'pen_lise',lockSay:'Slå Lille Lise først. Sander spiller ikke mot hvem som helst.',
    win:'Sander vant og jublet så høyt at måka skvatt.',lose:'Sander sier at gelen i håret var for tung i dag.'},
- rune:{n:'Rektor Rune',short:'Rektoren',e:'🧦',col:'#6b4a2a',hair:'#9a9aa0',reach:66,read:.45,ft:.62,miss:.06,acc:.85,s:'Har lykkesokker. Vasker dem aldri.',lock:'pen_sander',lockSay:'Rektor Rune spiller bare mot elever som har slått Store Sander.',
-   win:'Rektor Rune vant. Lykkesokkene virket. Igjen.',lose:'Rektor Rune tar av seg lykkesokkene og ser lenge på dem. Det lukter.'}};
+ rune:{n:'Rektor Kathrine',short:'Kathrine',e:'👓',col:'#d6407e',hair:'#c9c7c2',long:true,reach:66,read:.45,ft:.62,miss:.06,acc:.85,s:'Ser alt fra rektorkontoret. Også hvor du skal skyte.',lock:'pen_sander',lockSay:'Rektor Kathrine spiller bare mot elever som har slått Store Sander.',
+   win:'Rektor Kathrine vant. Hun sier hun så det på blikket ditt.',lose:'Rektor Kathrine pusser brillene og smiler. «Det der skal jeg fortelle på personalmøtet.»'}};
 function zPkMenu(){zMenu({title:'Straffespark',theme:'gard',back:zMenuGard,backLabel:'Skolegården',say:'Velg hvem du vil konkurrere mot. Én kamp koster én billett.',
   items:Object.keys(PKO).map(id=>{const o=PKO[id];return{t:o.n,e:o.e,s:o.s,col:o.col,cost:'1 🎟',done:!!PR().stk['pen_'+id],locked:!!(o.lock&&!PR().stk[o.lock]&&!CHEAT),lockSay:o.lockSay,act:()=>zPay(()=>pkStart(id))};})});}
 const GL={x:170,y:96,w:300,h:152},BS={x:320,y:352},KY=196;
@@ -1626,7 +1626,7 @@ function pkKeeper(k,col,glove,skin){hx.save();hx.translate(k.x,k.y);hx.rotate(k.
   hx.strokeStyle=col;hx.lineWidth=11;hx.lineCap='round';hx.beginPath();hx.moveTo(-18,-14);hx.lineTo(-40,-42);hx.moveTo(18,-14);hx.lineTo(40,-42);hx.stroke();
   circ(-42,-46,10,glove);circ(42,-46,10,glove);circ(0,-38,15,skin);circ(-5,-40,2,'#222');circ(5,-40,2,'#222');hx.restore();}
 function pkShooter(x,y,o){const sc=1.35;hx.save();hx.translate(x,y);hx.scale(sc,sc);fRR(-15,8,12,34,5,'#222');fRR(3,8,12,34,5,'#222');fRR(-17,-2,34,14,4,'#222');
-  fRR(-22,-44,44,46,12,o.col);tx('9',0,-22,22,'rgba(255,255,255,.85)','center',true);circ(0,-58,16,'#f3c9a4');hx.fillStyle=o.hair;hx.beginPath();hx.arc(0,-60,16.5,Math.PI*.9,Math.PI*2.1);hx.fill();circ(0,-56,13,o.hair);hx.restore();}
+  fRR(-22,-44,44,46,12,o.col);tx('9',0,-22,22,'rgba(255,255,255,.85)','center',true);if(o.long)fRR(-16,-60,32,34,10,o.hair);circ(0,-58,16,'#f3c9a4');hx.fillStyle=o.hair;hx.beginPath();hx.arc(0,-60,16.5,Math.PI*.9,Math.PI*2.1);hx.fill();circ(0,-56,13,o.hair);hx.restore();}
 function pkBoard(){const P=PK;fRR(12,24,250,68,12,'rgba(15,25,20,.78)');
   const row=(lbl,arr,y)=>{tx(lbl,24,y,fitS(lbl,92,16,true),'#fff','left',true);const n=Math.max(5,arr.length),sp=Math.min(24,130/n);for(let i=0;i<n;i++){const v=arr[i];circ(132+i*sp,y,Math.min(9,sp*.4),v===undefined?'rgba(255,255,255,.2)':v?'#3ccf6a':'#e04848');}};
   row(CH.name,P.me,44);row(P.o.short,P.op,72);}
@@ -1657,10 +1657,10 @@ function zMuted(){const sc=S&&SC[S.scene];return !!(sc&&sc.hd);}
 STK.push(
  ['fb_timtom','👬','Slo Tim og Tom','Vant fussball mot Tim og Tom'],
  ['fb_fia','👟','Slo Fia','Vant fussball mot Fotball-Fia'],
- ['fb_kare','🪛','Slo Kåre','Slo vaktmesteren i fussball'],
+ ['fb_kare','⭐','Slo SFO-Håkon','Slo SFO-Håkon i fussball'],
  ['bk_lise','🏀','Basket: Lise','Slo Lille Lise i basket'],
  ['bk_sander','💪','Basket: Sander','Slo Store Sander i basket'],
- ['bk_rune','🏆','Basket: rektor','Slo Rektor Rune i basket'],
+ ['bk_rune','🏆','Basket: rektor','Slo Rektor Kathrine i basket'],
  ['bk_tre','🎯','Trepoenger','Satte en trepoenger'],
  ['kunst','🎨','Kunstner','Hengte opp en tegning på SFO'],
  ['perle1','🔴','Perlebrett','Fullførte et perlebrett'],
@@ -1813,9 +1813,9 @@ const FBO={
  fia:{n:'Fotball-Fia',short:'Fia',e:'👟',col:'#8a40c0',sp:410,er:15,kick:.7,re:.17,s:'Spiller fotball tre dager i uka og fussball resten',lock:'fb_timtom',lockSay:'Slå Tim og Tom først. Fia spiller bare mot folk som kan snurre stengene.',
    hello:['Har du trent? Jeg har trent.'],score:['Rett i krysset!','Fia-finte!'],conc:['Hæ? Den var god.','Nå blir jeg skjerpet.'],
    win:'Fia vant. Hun sier du var nesten like god som henne.',lose:'Fia sier hun må trene mer, og går rett på trening.'},
- kare:{n:'Vaktmester Kåre',short:'Kåre',e:'🪛',col:'#e06a10',sp:550,er:8,kick:.88,re:.09,s:'Fant skrutrekkeren. Den lå i Skrutrekkeren.',lock:'fb_fia',lockSay:'Kåre har nettopp skrudd sammen bordet og spiller bare mot de beste. Slå Fotball-Fia først.',
-   hello:['Jeg fant skrutrekkeren! Den lå i Skrutrekkeren. Hvem kunne trodd det?'],score:['Skrudd fast!','Vaktmesterknep nummer elleve.'],conc:['Den stangen er litt løs.','Hm. Jeg glemte å stramme keeperen.'],
-   win:'Kåre vant. Han sier bordet er perfekt skrudd sammen.',lose:'Kåre sier at en skrue må ha løsnet. Han går for å hente skrutrekkeren igjen.'}};
+ kare:{n:'SFO-Håkon',short:'Håkon',e:'⭐',col:'#8a2433',sp:550,er:8,kick:.88,re:.09,s:'Bygger romskip av Lego når han ikke spiller fussball',lock:'fb_fia',lockSay:'SFO-Håkon spiller bare mot de beste i galaksen. Slå Fotball-Fia først.',
+   hello:['Fussball er som et romslag. Bare med flere stenger.'],score:['Kraften er med meg!','Full fart i hyperrommet!'],conc:['Godt skutt, unge padawan.','Jeg kjente en forstyrrelse i Kraften.'],
+   win:'SFO-Håkon vant. Han sier Kraften var sterk i stengene i dag.',lose:'SFO-Håkon bukker dypt og sier: «Kraften er sterk i deg.»'}};
 function zFbIcon(cx,cy){fRR(cx-48,cy-30,96,60,8,'#7a4a24');fRR(cx-42,cy-24,84,48,5,'#2f8a3e');hx.strokeStyle='rgba(255,255,255,.5)';hx.lineWidth=1;hx.beginPath();hx.moveTo(cx,cy-24);hx.lineTo(cx,cy+24);hx.stroke();
   [[-30,'#3a7ad8',1],[-12,'#e06a10',2],[12,'#3a7ad8',2],[30,'#e06a10',1]].forEach(r=>{hx.fillStyle='#c8ccd2';hx.fillRect(cx+r[0]-1,cy-30,2,60);for(let i=0;i<r[2];i++)circ(cx+r[0],cy+(r[2]===1?0:(i-.5)*24),5,r[1]);});circ(cx+4,cy+8,3.5,'#fff');}
 function zFbMenu(){zMenu({title:'Fussball',theme:'spill',back:zMenuSpill,backLabel:'Spillrommet',say:'Velg motstander. Én kamp koster én billett.',
@@ -1879,9 +1879,9 @@ SC.fb=zScene({hd:fbDraw,update:fbUpdate,tap(x,y){const F=FBG;if(!F||F.over)retur
 const BKO={
  lise:{n:'Lille Lise',short:'Lise',e:'👧',t:6,s:'Ballen er nesten like stor som henne. Hun har 6 poeng.',win:'Lise fikk 6 poeng og danset en liten seiersdans.',lose:'Lise sier hun skal vokse litt før neste gang.'},
  sander:{n:'Store Sander',short:'Sander',e:'🧑',t:12,s:'Har gele i håret og 12 poeng å slå',lock:'bk_lise',lockSay:'Slå Lille Lise først.',win:'Sander fikk 12 poeng og tok tre selfies.',lose:'Sander sier gelen gjorde håret for tungt til å hoppe.'},
- rune:{n:'Rektor Rune',short:'Rektoren',e:'🎩',t:18,s:'Har 18 poeng og lykkesokker som ikke virker på basket',lock:'bk_sander',lockSay:'Rektor Rune spiller bare mot elever som har slått Store Sander.',win:'Rektor Rune fikk 18. Han skylder ikke på sokkene denne gangen.',lose:'Rektor Rune gir deg en rektorhånd. Den er litt svett.'}};
+ rune:{n:'Rektor Kathrine',short:'Kathrine',e:'👓',t:18,s:'Har 18 poeng og har spilt basket siden hun gikk på Jong skole selv',lock:'bk_sander',lockSay:'Rektor Kathrine spiller bare mot elever som har slått Store Sander.',win:'Rektor Kathrine fikk 18 og ringte i skoleklokka av glede.',lose:'Rektor Kathrine gir deg en high five og sier at dette må stå i skoleavisa.'}};
 function zBkMenu(){zMenu({title:'Basket',theme:'gard',back:zMenuGard,backLabel:'Skolegården',say:'Få flere poeng enn motstanderen på 60 sekunder. Én runde koster én billett.',
-  items:Object.keys(BKO).map(id=>{const o=BKO[id];return{t:o.n,e:o.e,s:o.s,col:id==='lise'?'#e0559a':id==='sander'?'#2f6fd0':'#6b4a2a',cost:'1 🎟',done:!!PR().stk['bk_'+id],locked:!!(o.lock&&!PR().stk[o.lock]&&!CHEAT),lockSay:o.lockSay,act:()=>zPay(()=>bkStart(id))};})});}
+  items:Object.keys(BKO).map(id=>{const o=BKO[id];return{t:o.n,e:o.e,s:o.s,col:id==='lise'?'#e0559a':id==='sander'?'#2f6fd0':'#d6407e',cost:'1 🎟',done:!!PR().stk['bk_'+id],locked:!!(o.lock&&!PR().stk[o.lock]&&!CHEAT),lockSay:o.lockSay,act:()=>zPay(()=>bkStart(id))};})});}
 const BKH={ry:176,fx:518,bx:574,bd:582,ftop:100},BFLOOR=372,BG_=900,SPOTS=[{x:340,p:2},{x:296,p:2},{x:252,p:2},{x:204,p:3},{x:160,p:3},{x:124,p:3}];
 let BK=null;
 function bkStart(id){BK={id,o:BKO[id],t:60,score:0,makes:0,spot:0,ph:'aim',b:null,drag:null,msg:'Klar? 60 sekunder!',msgT:1.8,over:false,endT:0,swish:0,gull:0,net:0};bkReset();setScene('bk','in');}
