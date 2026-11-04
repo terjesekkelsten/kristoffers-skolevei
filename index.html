@@ -184,7 +184,7 @@ body{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
         </div>
       </div>
       <div class="gobar"><button class="big" id="bStart">START SKOLEVEIEN</button><button class="big alt" id="bClass">KLASSEROMMET</button><button class="big hub" id="bHub">SKOLEKARTET</button></div>
-      <p class="note">Til voksne: Velg spiller og trinn. To riktige oppgaver i klasserommet gir én friminuttbillett til spillrommet og skolegården. Trykk på skjermen for å gå. Trykk på ting for å ta dem eller se på dem. Skru på lyden. Best med nettbrettet liggende.</p>
+      <p class="note">Til voksne: Velg spiller og trinn. To oppgaver riktig på første forsøk i klasserommet gir én friminuttbillett til spillrommet og skolegården. En oppstilling uten feil gir én hel billett. Trykk på skjermen for å gå. Trykk på ting for å ta dem eller se på dem. Skru på lyden. Best med nettbrettet liggende.</p>
     </div>
 
     <div class="ov" id="dip" hidden>
@@ -947,7 +947,7 @@ const NOART={cat:'en katt',dog:'en hund',sun:'en sol',car:'en bil',house:'et hus
 const COLS={red:['#e03030','rød'],blue:['#3060ff','blå'],green:['#30b040','grønn'],yellow:['#ffe040','gul'],black:['#111111','svart'],white:['#ffffff','hvit'],pink:['#ff8fc0','rosa'],orange:['#ff9a3a','oransje']};
 const NUMEN=['zero','one','two','three','four','five','six','seven','eight','nine','ten','eleven','twelve','thirteen','fourteen','fifteen','sixteen','seventeen','eighteen','nineteen','twenty'];
 const DAYS=[['MANDAG','MONDAY'],['TIRSDAG','TUESDAY'],['ONSDAG','WEDNESDAY'],['TORSDAG','THURSDAY'],['FREDAG','FRIDAY'],['LØRDAG','SATURDAY'],['SØNDAG','SUNDAY']];
-const PHRASES=[['GOD MORGEN','GOOD MORNING'],['JEG HETER KRISTOFFER','MY NAME IS KRISTOFFER'],['JEG ER SEKS ÅR','I AM SIX YEARS OLD'],['TUSEN TAKK','THANK YOU'],['HVORDAN HAR DU DET?','HOW ARE YOU?'],['JEG LIKER FOTBALL','I LIKE FOOTBALL'],['HA DET BRA','GOODBYE'],['JEG HAR EN KATT','I HAVE A CAT']];
+const PHRASES=[['GOD MORGEN','GOOD MORNING'],['JEG HETER KRISTOFFER','MY NAME IS KRISTOFFER'],['JEG ER {AGE} ÅR','I AM {AGEEN} YEARS OLD'],['TUSEN TAKK','THANK YOU'],['HVORDAN HAR DU DET?','HOW ARE YOU?'],['JEG LIKER FOTBALL','I LIKE FOOTBALL'],['HA DET BRA','GOODBYE'],['JEG HAR EN KATT','I HAVE A CAT']];
 const RIM=[['SOL',['STOL','BIL','HUS']],['BIL',['PIL','SOL','BOK']],['HUS',['MUS','TRE','KATT']],['KATT',['HATT','HUND','EPLE']],['BOK',['KOK','SOL','FISK']],['BALL',['FALL','BIL','HUS']],['FISK',['DISK','SOL','BOK']],['TRE',['SNE','BIL','KATT']],['MUS',['LUS','BIL','SOL']]];
 const KLASS=[['HVILKET ORD ER ET VERB?','Hvilket ord er noe du gjør? Et verb.',[['HOPPE','BIL','RØD'],['LØPE','HUS','STOR'],['SPISE','KATT','GLAD'],['SOVE','BOK','BLÅ'],['LESE','TRE','LITEN']]],
   ['HVILKET ORD ER ET SUBSTANTIV?','Hvilket ord er navnet på en ting? Et substantiv.',[['BALL','LØPE','GUL'],['SKOLE','SYKLE','RASK'],['EPLE','HOPPE','VARM']]],
@@ -956,7 +956,7 @@ const SKRIV=[['SKOLE','SKOLLE','SKÅLE'],['HJEM','JEM','HJÆM'],['GJERNE','JERNE
 const MOTS=[['MOTSATT AV STOR','LITEN',['LANG','GLAD']],['MOTSATT AV VARM','KALD',['VÅT','GUL']],['MOTSATT AV GLAD','LEI SEG',['RASK','HØY']],['MOTSATT AV LYS','MØRK',['LANG','SØT']],['SKOLE + SEKK','SKOLESEKK',['SEKKSKOLE','SKOLSEKK']],['FOT + BALL','FOTBALL',['BALLFOT','FOTBAL']],['SOL + BRILLER','SOLBRILLER',['BRILLESOL','SOLBRILER']],['IS + KREM','ISKREM',['KREMIS','ISKRÆM']]];
 const SUBJ={norsk:'norsk',engelsk:'engelsk',matte:'matte'};
 const LVL=['1A','1B','2A','2B','3A','3B','4A','4B','5A','5B'];
-const LVLDESC={matte:['Pluss til 5','Pluss og minus til 10','Regning til 20','Tiere og enere','Regning til 100','Gangetabell 2, 5, 10','Gange og dele','Store tall','Store gangestykker','Brøk og desimaltall'],
+const LVLDESC={matte:['Pluss til 5','Pluss og minus til 10','Regning til 20','Tiere og enere','Regning til 100','Gangetabell og oppstilling','Gange og dele i oppstilling','Store tall i oppstilling','Gange og dele med rest','Brøk og desimaltall'],
   engelsk:['Ord og bilder','Farger','Tall til 10','Les ordet','Fargeord','Tall 11 til 20','Ukedager','Setninger','Spørsmål og svar','Grammatikk'],
   norsk:['Første bokstav','Stav korte ord','Stav ord med fire','Rim','Stav lange ord','Ordklasser','Skriv riktig','Motsatt og sammensatt','Synonymer','Bøy verbet']};
 function drawPic(c,name,x,y,k){const m=PICS[name];for(let j=0;j<10;j++)for(let i=0;i<10;i++){const ch=m[j][i];if(ch!=='.')R(c,x+i*k,y+j*k,k,k,PIXPAL[ch]);}}
@@ -977,8 +977,7 @@ function saveProg(){saveDB();}
 /* task builders */
 function mc(o){return Object.assign({kind:'mc',layout:'cards'},o);}
 function numOpts(ans,n,spread){const set=new Set([ans]);for(const d of shuffle(spread.slice())){if(set.size>=n)break;if(ans+d>=0)set.add(ans+d);}let k=1;while(set.size<n){set.add(ans+k);k++;}return shuffle([...set]);}
-function mathTask(a,op,b,n,spread,apples){const ans=op==='+'?a+b:op==='-'?a-b:op==='×'?a*b:a/b;const opts=numOpts(ans,n,spread);
-  return mc({q:[a+op+b+'=?'],apples:apples?{a,b,op}:null,say:'Hva er '+a+' '+({'+':'pluss','-':'minus','×':'ganger',':':'delt på'}[op])+' '+b+'?',opts:opts.map(v=>({n:v})),ans:opts.indexOf(ans),reveal:String(ans)});}
+function mathTask(a,op,b,n,spread,apples){const ans=op==='+'?a+b:op==='-'?a-b:op==='×'?a*b:a/b;return numTask(a+(op==='×'?DOT:op)+b+'=?',ans,'Hva er '+a+' '+({'+':'pluss','-':'minus','×':'ganger',':':'delt på'}[op])+' '+b+'?',{apples:apples?{a,b,op}:null});}
 function stavTask(k,extra){const w=NO[k];const pool='AEIOSTLNRMKBDGHPUV'.split('').filter(ch=>!w.includes(ch));const tiles=shuffle([...w.split(''),...shuffle(pool).slice(0,extra)]).map(ch=>({ch,used:false}));
   return {kind:'stav',pic:k,letters:w,tiles,filled:0,errs:0,say:'Malin har tegnet '+NOART[k]+'. Stav ordet '+w.toLowerCase()+'.'};}
 function rowsTask(o,correct,wrongs){const opts=shuffle([correct,...wrongs]);return mc(Object.assign({layout:'rows',opts:opts.map(t=>({t})),ans:opts.indexOf(correct),reveal:correct},o));}
@@ -990,9 +989,9 @@ function gen(subj,L){if(L>=8)return genHi(subj,L);const T=[];
       if(L===2){if(i%2===0){const a=rnd(6,14),b=rnd(2,6);T.push(mathTask(a,'+',b,3,[1,-1,2,-2,10],false));}else{const a=rnd(11,20),b=rnd(2,9);T.push(mathTask(a,'-',b,3,[1,-1,2,-2,-10],false));}}
       if(L===3){if(i<2){const a=rnd(1,8)*10,b=rnd(1,9-a/10)*10;T.push(mathTask(a,'+',b,3,[10,-10,1],false));}else{const t=rnd(1,8)*10,u=rnd(0,5),b=rnd(1,9-u);T.push(mathTask(t+u,'+',b,3,[1,-1,10,-10],false));}}
       if(L===4){if(i%2===0){const a=rnd(25,59),b=rnd(16,39);T.push(mathTask(a,'+',b,3,[10,-10,1,-1],false));}else{const a=rnd(52,95),b=rnd(17,48);T.push(mathTask(a,'-',b,3,[10,-10,1,-1],false));}}
-      if(L===5){const f=[2,5,10][i%3],n=rnd(2,10);T.push(mathTask(n,'×',f,3,[f,-f,1,-1],false));}
-      if(L===6){const f=pick([3,4,6,7,8,9]),n=rnd(2,10);if(i<3)T.push(mathTask(n,'×',f,4,[f,-f,1,-1,10],false));else T.push(mathTask(n*f,':',f,4,[1,-1,2,-2],false));}
-      if(L===7){if(i<3){const a=rnd(120,480),b=rnd(110,390);if(i===1&&a>b)T.push(mathTask(a,'-',b,4,[10,-10,100,-100,1],false));else T.push(mathTask(a,'+',b,4,[10,-10,100,-100,1],false));}else{const a=rnd(12,25),b=rnd(3,6);T.push(mathTask(a,'×',b,4,[b,-b,10,-10],false));}}}}
+      if(L===5){if(i<2){const f=[2,5,10][rnd(0,2)],n=rnd(2,10);T.push(mathTask(n,'×',f,3,[f,-f,1,-1],false));}else if(i<4)T.push(oppTaskOf(gMulNoCarry));else T.push(oppTaskOf(gDivNoCarry));}
+      if(L===6){const f=pick([3,4,6,7,8,9]),n=rnd(2,10);if(i<2)T.push(mathTask(n,'×',f,4,[f,-f,1,-1,10],false));else if(i===2)T.push(mathTask(n*f,':',f,4,[1,-1,2,-2],false));else if(i===3)T.push(oppTaskOf(gMulCarry));else T.push(oppTaskOf(gDiv2));}
+      if(L===7){if(i<2){const a=rnd(120,480),b=rnd(110,390);if(i===1&&a>b)T.push(mathTask(a,'-',b,4,[10,-10,100,-100,1],false));else T.push(mathTask(a,'+',b,4,[10,-10,100,-100,1],false));}else if(i<4)T.push(oppTaskOf(gMul3));else T.push(oppTaskOf(gDivZero));}}}
   if(subj==='engelsk'){const keys=Object.keys(PICS);const colk=Object.keys(COLS);
     for(let i=0;i<5;i++){
       if(L===0){const k=pick(keys),o=shuffle([k,...shuffle(keys.filter(x=>x!==k)).slice(0,2)]);T.push(mc({q:['WHICH ONE IS',EN[k].toUpperCase()],say:'Hvilket bilde er',en:EN[k],opts:o.map(p=>({pic:p})),ans:o.indexOf(k),reveal:EN[k]}));}
@@ -1002,7 +1001,7 @@ function gen(subj,L){if(L>=8)return genHi(subj,L);const T=[];
       if(L===4){const k=pick(colk);const w=shuffle(colk.filter(x=>x!==k)).slice(0,2).map(x=>x.toUpperCase());T.push(rowsTask({color:COLS[k][0],say:'Hva heter '+COLS[k][1]+' på engelsk?',enOk:k},k.toUpperCase(),w));}
       if(L===5){const n=rnd(11,20);const w=shuffle([11,12,13,14,15,16,17,18,19,20].filter(x=>x!==n)).slice(0,2).map(x=>NUMEN[x].toUpperCase());T.push(rowsTask({q:[String(n)],say:'Hva heter '+n+' på engelsk?',enOk:NUMEN[n]},NUMEN[n].toUpperCase(),w));}
       if(L===6){const d=pick(DAYS);const w=shuffle(DAYS.filter(x=>x!==d)).slice(0,2).map(x=>x[1]);T.push(rowsTask({q:[d[0]+' = ?'],say:'Hva er '+d[0].toLowerCase()+' på engelsk?',enOk:d[1].toLowerCase()},d[1],w));}
-      if(L===7){const ph=PHRASES[(i*3+rnd(0,7))%PHRASES.length].map(x=>x.replace('KRISTOFFER',CH.name.toUpperCase()));const w=shuffle(PHRASES.filter(x=>x[0]!==ph[0]&&!x[0].includes('HETER'))).slice(0,2).map(x=>x[1]);T.push(rowsTask({q:[ph[0]],say:'Hvordan sier du '+ph[0].toLowerCase().replace('?','')+', på engelsk?',enOk:ph[1].toLowerCase()},ph[1],w));}}}
+      if(L===7){const PH=PHRASES.map(p=>p.map(x=>x.replace('KRISTOFFER',CH.name.toUpperCase()).replace('{AGE}',ageOf().no).replace('{AGEEN}',ageOf().en)));const ph=PH[(i*3+rnd(0,7))%PH.length];const w=shuffle(PH.filter(x=>x[0]!==ph[0]&&!x[0].includes('HETER'))).slice(0,2).map(x=>x[1]);T.push(rowsTask({q:[ph[0]],sent:true,say:'Hvordan sier du '+ph[0].toLowerCase().replace('?','')+', på engelsk?',enOk:ph[1].toLowerCase()},ph[1],w));}}}
   if(subj==='norsk'){
     const short=['sun','car','house','book','tree'],four=['cat','dog','fish','ball','apple','bird'],long=['flower','star','heart'];
     if(L===0){for(const k of shuffle(Object.keys(PICS)).slice(0,5)){const f=NO[k][0];const o=shuffle([f,...shuffle('ABDEFGHIKLMNOPRSTU'.split('').filter(c=>c!==f)).slice(0,2)]);T.push(mc({pic:k,say:'Hvilken bokstav begynner '+NO[k].toLowerCase()+' med?',opts:o.map(t=>({t})),ans:o.indexOf(f),reveal:f}));}}
@@ -1017,10 +1016,10 @@ function gen(subj,L){if(L>=8)return genHi(subj,L);const T=[];
 /* flow */
 let CL=null;
 function startClass(){setScene('klasse','in');CL={stage:'choose',subj:null,lvl:0,tasks:[],i:0,tries:0,firstOk:0,modBonus:0,flash:null,wait:0,after:null};
-  talk('laerer','Velkommen til timen! Trykk på norsk, engelsk eller matte på tavla. Hvert fag har moduler fra første til femte klasse. To riktige oppgaver gir én friminuttbillett.');}
+  talk('laerer','Velkommen til timen! Trykk på norsk, engelsk eller matte på tavla. Hvert fag har moduler fra første til femte klasse. To oppgaver riktig på første forsøk gir én friminuttbillett, og en oppstilling uten feil gir en hel billett.');}
 function openGrid(subj){CL.subj=subj;CL.stage='grid';const P=PROG[subj];say('Du valgte '+subj+'. Velg en modul. Du har låst opp '+P.open+(P.open===1?' modul.':' moduler.'));}
 function startModule(L){CL.lvl=L;CL.tasks=gen(CL.subj,L);CL.i=0;CL.firstOk=0;CL.modBonus=0;CL.stage='task';SFX.chime();say('Modul '+LVL[L]+'. '+LVLDESC[CL.subj][L]+'.');CL.wait=1.6;CL.after=askTask;}
-function askTask(){const t=CL.tasks[CL.i];CL.tries=0;CL.flash=null;if(t.en)speakNoEn(t.say,t.en);else say(t.say);}
+function askTask(){const t=CL.tasks[CL.i];CL.tries=0;CL.flash=null;if(t.kind==='opp'){oppBegin(t);return;}if(t.en)speakNoEn(t.say,t.en);else say(t.say);}
 function ptsFor(first){return first?2+Math.floor(CL.lvl/2):1;}
 function bonus(p){CL.modBonus+=p;S.bonus=(S.bonus||0)+p;SFX.chime();toast('+'+p+' bonus');updStatus();}
 function nextTask(){CL.i++;if(CL.i<CL.tasks.length){askTask();return;}
@@ -1031,20 +1030,22 @@ function nextTask(){CL.i++;if(CL.i<CL.tasks.length){askTask();return;}
   else if(CL.lvl===LVL.length-1&&CL.firstOk>=4)msg+=' Du har klart femte klasse! Helt rått!';
   S.mods.push({subj:CL.subj,lvl:CL.lvl,ok:CL.firstOk,b:CL.modBonus});saveProg();zModuleDone();ask('laerer',msg+' Vil du ta en modul til?',['Ja, en til!','Til skolekartet','Ferdig for i dag'],i=>{if(i===0){CL.stage='choose';say('Velg fag.');}else if(i===1)goHub();else showDiploma();});}
 function answer(ok,idx){const t=CL.tasks[CL.i];CL.flash={ok,pick:idx,t:.9};
-  if(ok){const first=CL.tries===0&&!(t.errs>0);if(first)CL.firstOk++;bonus(ptsFor(first));zTask();
+  if(ok){const first=CL.tries===0&&!(t.errs>0);if(first)CL.firstOk++;bonus(ptsFor(first));if(first)zTask();
     if(t.enOk)speakNoEn(pick(['Riktig!','Kjempebra!','Flott!']),t.enOk);else say(pick(['Riktig!','Kjempebra!','Helt riktig!','Flott!']));CL.wait=1.4;CL.after=nextTask;}
-  else{CL.tries++;SFX.brake();if(CL.tries>=2){if(t.en||t.enOk)speakNoEn('Nesten! Riktig svar var',t.enOk||t.en);else say('Nesten! Riktig svar var '+String(t.reveal).toLowerCase()+'.');CL.flash={ok:true,pick:t.ans,t:2};CL.wait=2.4;CL.after=nextTask;}else say('Nesten! Prøv igjen.');}}
+  else{CL.tries++;SFX.brake();if(t.kind==='num'){t.wrongShown=t.inp;t.inp='';}if(CL.tries>=2){if(t.kind==='num')t.inp=t.reveal;if(t.en||t.enOk)speakNoEn('Nesten! Riktig svar var',t.enOk||t.en);else say('Nesten! Riktig svar var '+String(t.reveal).toLowerCase()+'.');CL.flash={ok:true,pick:t.ans,t:2};CL.wait=2.4;CL.after=nextTask;}else say('Nesten! Prøv igjen.');}}
 function classTap(x,y){if(!CL||CL.wait>0||CL.stage==='done')return;
   if(CL.stage==='choose'&&hit(HUBR,x,y)){SFX.door();goHub();return;}
   if(CL.stage==='choose'){const subs=['norsk','engelsk','matte'];for(let i=0;i<3;i++){if(hit(CHOOSE[i],x,y)){SFX.chime();openGrid(subs[i]);return;}}return;}
   if(CL.stage==='grid'){if(hit(BACKR,x,y)){CL.stage='choose';say('Velg fag.');return;}
     for(let i=0;i<LVL.length;i++){if(hit(GRIDR[i],x,y)){if(i<openN(CL.subj))startModule(i);else{SFX.brake();say('Denne modulen er låst. Få fire riktige i modulen før, så låser du den opp.');}return;}}return;}
   const t=CL.tasks[CL.i];
+  if(t.kind==='num'){numTap(t,x,y);return;}
+  if(t.kind==='opp'){oppTap(t,x,y);return;}
   if(t.kind==='mc'){optRects(t).forEach((r,i)=>{if(hit(r,x,y))answer(i===t.ans,i);});return;}
   if(t.kind==='stav'){const rs=tileRects(t);for(let i=0;i<rs.length;i++){if(hit(rs[i],x,y)&&!t.tiles[i].used){const need=t.letters[t.filled];
       if(t.tiles[i].ch===need){t.tiles[i].used=true;t.filled++;SFX.count();speak(t.tiles[i].ch,'laerer');if(t.filled===t.letters.length){CL.wait=.5;CL.after=()=>{answer(true,-1);say(t.letters.toLowerCase()+'! Riktig!');};}}
       else{t.errs++;CL.flash={ok:false,pick:i,t:.6};SFX.brake();say('Nei, ikke '+t.tiles[i].ch+'. Hvilken bokstav kommer nå?');}return;}}}}
-function updClass(dt){if(BUB.t>0)BUB.t-=dt;if(!CL)return;if(CL.flash){CL.flash.t-=dt;if(CL.flash.t<=0)CL.flash=null;}if(CL.wait>0){CL.wait-=dt;if(CL.wait<=0&&CL.after){const f=CL.after;CL.after=null;f();}}}
+function updClass(dt){if(BUB.t>0)BUB.t-=dt;if(!CL)return;{const ct=CL.stage==='task'&&CL.tasks[CL.i];if(ct&&ct.kind==='opp')oppUpdate(ct,dt);}if(CL.flash){CL.flash.t-=dt;if(CL.flash.t<=0)CL.flash=null;}if(CL.wait>0){CL.wait-=dt;if(CL.wait<=0&&CL.after){const f=CL.after;CL.after=null;f();}}}
 function bgKlasse(){}
 /* ---------- HD classroom renderer (logical 640x400, drawn at device resolution) ---------- */
 const hc=$('hc');let hx=hc.getContext('2d');
@@ -1099,7 +1100,7 @@ function hdBubble(){if(BUB.t<=0||!BUB.text)return;const x=8,w=142,size=14;const 
   hx.fillStyle='#ffffff';hx.beginPath();hx.moveTo(62,y+h-1);hx.lineTo(80,y+h-1);hx.lineTo(78,y+h+14);hx.closePath();hx.fill();hx.strokeStyle='#2a2a2a';hx.beginPath();hx.moveTo(62,y+h);hx.lineTo(78,y+h+14);hx.lineTo(80,y+h);hx.stroke();
   setF(size);hx.textAlign='left';hx.textBaseline='middle';hx.fillStyle='#222';lines.forEach((l,i)=>hx.fillText(l,x+9,y+16+i*18));
   setF(9,true);hx.fillStyle='#c0392b';hx.fillText('MALIN',x+9,y+5.5);}
-function drawHD(){const k=hc.width/640;hx.setTransform(k,0,0,k,0,0);hx.clearRect(0,0,640,400);hdRoom();hdBoard();hdKids();
+function drawHD(){const k=hc.width/640;hx.setTransform(k,0,0,k,0,0);hx.clearRect(0,0,640,400);hdRoom();hdBoard();hdKids();oppDraw();
   const talking=('speechSynthesis' in window)&&speechSynthesis.speaking&&BUB.t>0;hdMalin(talking);hdBubble();}
 /* board geometry shared by drawing and tapping */
 const CHOOSE=[0,1,2].map(i=>({x:BC-(3*126+2*16)/2+i*142,y:62,w:126,h:166}));
@@ -1126,20 +1127,245 @@ function hdBoard(){if(!CL)return;
   if(CL.stage==='task'||CL.stage==='done'){const t=CL.tasks[Math.min(CL.i,CL.tasks.length-1)];
     chalk(LVL[CL.lvl],BX+20,BY+16,14,'#a8d8b8','center',true);zBoardTk();
     for(let i=0;i<5;i++)star(BX+BW-78+i*15,BY+16,6,i<CL.i||CL.stage==='done');
+    if(t.kind==='num')numDraw(t);
     if(t.kind==='mc'){let y=50;
       if(t.apples){const a=t.apples,n=a.a+a.b,gap=24;let x=BC-((n*gap)+26)/2+gap/2;for(let i=0;i<a.a;i++){emo('apple',x,y,22);x+=gap;}chalk(a.op==='-'?'−':'+',x,y,22,'#fff','center',true);x+=26;for(let i=0;i<a.b;i++){emo('apple',x,y,22);if(a.op==='-'){hx.strokeStyle='#fff';hx.lineWidth=2.5;hx.beginPath();hx.moveTo(x-10,y+10);hx.lineTo(x+10,y-10);hx.stroke();}x+=gap;}y+=34;}
       if(t.pic){const sz=t.layout==='rows'?62:76;emo(t.pic,BC,y+sz/2,sz);y+=sz+6;}
       if(t.color){const hh=t.layout==='rows'?56:72;fRR(BC-48,y,96,hh,10,t.color);sRR(BC-48,y,96,hh,10,'#f0f6f0',2);y+=hh+8;}
-      if(t.q){const maxY=t.layout==='rows'?138:150;const n=t.q.length;t.q.forEach((ln,j)=>{const big=j===n-1&&n>1;const sz=fitS(nice(ln),400,big?40:(t.apples?32:36),true);if(y+sz<=maxY+6){chalk(nice(ln),BC,y+sz/2,sz,big?'#ffe36a':'#ffffff','center',true);y+=sz+8;}else{chalk(nice(ln),BC,y+8,14,'#ffffff');y+=18;}});}
+      if(t.q){const maxY=t.layout==='rows'?138:150;const n=t.q.length;t.q.forEach((ln,j)=>{const big=j===n-1&&n>1;const L2=nice(lc(ln));const sz=fitS(L2,400,big?40:(t.apples?32:36),true);if(y+sz<=maxY+6){chalk(L2,BC,y+sz/2,sz,big?'#ffe36a':'#ffffff','center',true);y+=sz+8;}else{chalk(L2,BC,y+8,14,'#ffffff');y+=18;}});}
       optRects(t).forEach((r,i)=>{const o=t.opts[i];const fl=CL.flash&&CL.flash.pick===i;card(r,fl?(CL.flash.ok?'ok':'bad'):null);
         if(o.n!=null)chalk(String(o.n),r.x+r.w/2,r.y+r.h/2+2,fitS(String(o.n),r.w-16,46,true),'#ffffff','center',true);
         if(o.pic)emo(o.pic,r.x+r.w/2,r.y+r.h/2+2,52);
         if(o.color){fRR(r.x+14,r.y+12,r.w-28,r.h-24,8,o.color);}
-        if(o.t){const s=nice(o.t);const sz=t.layout==='rows'?fitS(s,r.w-20,19,true):fitS(s,r.w-16,40,true);chalk(s,r.x+r.w/2,r.y+r.h/2+1,sz,'#ffffff','center',true);}});}
+        if(o.t){const s=nice(lc(o.t));const sz=t.layout==='rows'?fitS(s,r.w-20,19,true):fitS(s,r.w-16,40,true);chalk(s,r.x+r.w/2,r.y+r.h/2+1,sz,'#ffffff','center',true);}});}
     if(t.kind==='stav'){emo(t.pic,BC,92,78);const n=t.letters.length,sw=n>5?34:44,x0=BC-(n*sw)/2;
-      for(let i=0;i<n;i++){hx.fillStyle='#f0f6f0';hx.fillRect(x0+i*sw+5,166,sw-10,2.5);if(i<t.filled)chalk(t.letters[i],x0+i*sw+sw/2,148,n>5?28:34,'#ffe36a','center',true);}
-      tileRects(t).forEach((r,i)=>{const tl=t.tiles[i];if(tl.used)return;const fl=CL.flash&&!CL.flash.ok&&CL.flash.pick===i;card(r,fl?'bad':null);chalk(tl.ch,r.x+r.w/2,r.y+r.h/2+2,Math.min(34,r.w*.75),'#ffffff','center',true);});}}}
-function nice(s){return s.replace(/-/g,'−').replace(/:/g,' : ').replace(/×/g,' × ').replace(/\+/g,' + ').replace(/=/g,' = ').replace(/\s+/g,' ').trim();}
+      for(let i=0;i<n;i++){hx.fillStyle='#f0f6f0';hx.fillRect(x0+i*sw+5,166,sw-10,2.5);if(i<t.filled)chalk(lc(t.letters[i]),x0+i*sw+sw/2,148,n>5?28:34,'#ffe36a','center',true);}
+      tileRects(t).forEach((r,i)=>{const tl=t.tiles[i];if(tl.used)return;const fl=CL.flash&&!CL.flash.ok&&CL.flash.pick===i;card(r,fl?'bad':null);chalk(lc(tl.ch),r.x+r.w/2,r.y+r.h/2+2,Math.min(34,r.w*.75),'#ffffff','center',true);});}}}
+function nice(s){return s.replace(/-/g,'−').replace(/:/g,' : ').replace(/[×·]/g,' · ').replace(/\+/g,' + ').replace(/=/g,' = ').replace(/\s+/g,' ').trim();}
+
+/* ================= talltastatur (num) ================= */
+const DOT='·';
+function numTask(q,ans,say,o){return Object.assign({kind:'num',q:[q],ans:String(ans),say,inp:'',reveal:String(ans)},o||{});}
+function numEq(a,b){const f=s=>parseFloat(String(s).replace(',','.'));return a!==''&&Math.abs(f(a)-f(b))<1e-9;}
+const NUMBOX={x:BC-80,y:104,w:160,h:40};
+function numKeys(t){const r=[];const w=38,g=4,x0=BC-(10*w+9*g)/2;
+  '1234567890'.split('').forEach((k,i)=>r.push({k,x:x0+i*(w+g),y:154,w,h:38}));
+  const row2=[];if(t.dec)row2.push({k:',',w:60});row2.push({k:'⌫',w:80},{k:'OK',w:110});
+  const tw=row2.reduce((s,q)=>s+q.w,0)+(row2.length-1)*10;let x=BC-tw/2;row2.forEach(q=>{r.push({k:q.k,x,y:200,w:q.w,h:38});x+=q.w+10;});return r;}
+function numTap(t,x,y){const key=numKeys(t).find(r=>hit(r,x,y));if(!key)return;tone(880,.03,{type:'square'});
+  if(key.k==='⌫'){t.inp=t.inp.slice(0,-1);return;}
+  if(key.k==='OK'){if(!t.inp)return;answer(numEq(t.inp,t.ans),-1);return;}
+  if(key.k===','){if(t.inp&&!t.inp.includes(','))t.inp+=',';return;}
+  if(t.inp.length<7)t.inp=(t.inp==='0'?'':t.inp)+key.k;}
+function numDraw(t){
+  if(t.apples){const a=t.apples,n=a.a+a.b,gap=22;let x=BC-((n*gap)+24)/2+gap/2;const y=60;
+    for(let i=0;i<a.a;i++){emo('apple',x,y,20);x+=gap;}chalk(a.op==='-'?'−':'+',x,y,20,'#fff','center',true);x+=24;
+    for(let i=0;i<a.b;i++){emo('apple',x,y,20);if(a.op==='-'){hx.strokeStyle='#fff';hx.lineWidth=2.5;hx.beginPath();hx.moveTo(x-9,y+9);hx.lineTo(x+9,y-9);hx.stroke();}x+=gap;}
+    chalk(nice(t.q[0]),BC,88,fitS(nice(t.q[0]),400,24,true),'#ffffff','center',true);}
+  else chalk(nice(t.q[0]),BC,68,fitS(nice(t.q[0]),420,40,true),'#ffffff','center',true);
+  const fl=CL.flash;card(NUMBOX,fl?(fl.ok?'ok':'bad'):null);
+  const show=t.inp||(fl&&!fl.ok?t.wrongShown:'')||'';
+  chalk(show||'?',BC,NUMBOX.y+NUMBOX.h/2+2,30,show?'#ffffff':'rgba(255,255,255,.35)','center',true);
+  numKeys(t).forEach(r=>{card(r);chalk(r.k,r.x+r.w/2,r.y+r.h/2+1,r.k==='OK'?18:22,'#ffffff','center',true);});}
+
+/* ================= små bokstaver fra 2. trinn ================= */
+const PROPER_EN=['Norway','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday','Tom','I'];
+function lc(s){s=String(s);if(!CL||CL.subj==='matte'||CL.lvl<2||!/[A-ZÆØÅ]/.test(s))return s;
+  let r=s.toLowerCase();const ct=CL.tasks&&CL.tasks[CL.i];if((ct&&ct.sent)||(/[a-zæøå] [a-zæøå_]/.test(r)&&!/\+/.test(r)))r=r.charAt(0).toUpperCase()+r.slice(1);
+  const words=(CL.subj==='engelsk'?PROPER_EN:[]).concat([CH.name]);
+  for(const w of words){const lw=w.toLowerCase().replace(/[.*+?^${}()|[\]\\]/g,'\\$&');r=r.replace(new RegExp('(^|[^a-zæøåA-ZÆØÅ])'+lw+'(?=$|[^a-zæøåA-ZÆØÅ])','g'),(m,p)=>p+w);}
+  return r;}
+function ageOf(){const tr=(DB&&PR().trinn)||1;return{no:['SEKS','SJU','ÅTTE','NI','TI'][Math.min(4,tr-1)],en:['SIX','SEVEN','EIGHT','NINE','TEN'][Math.min(4,tr-1)]};}
+
+/* ================= oppstilling (gange og deling) ================= */
+const OS={x:160,y:22,w:470,h:362};
+const OB={vis:{x:482,y:88,w:132,h:32},hint:{x:482,y:128,w:132,h:32},done:{x:482,y:348,w:132,h:30}};
+const GA={x:176,y:108,w:292,h:268};
+const sp=n=>String(n);
+function digs(n){return String(n).split('').map(Number);}
+function oCell(t,r,c,v,kind){t.cells[r+','+c]={v,kind};}
+function oStep(t,r,c,v,ask,how,x){const key=r+','+c;t.steps.push(Object.assign({key,v,ask,how},x||{}));if(!(x&&x.down))oCell(t,r,c,v,(x&&x.mente)?'mente':'ans');else oCell(t,r,c,v,'ans');}
+function oBase(op,W,nRows,small){return{kind:'opp',op,W,rows:Array.from({length:nRows},(_,i)=>({small:!!(small&&small.includes(i))})),cells:{},signs:[],lines:[],steps:[],ent:{},si:0,errs:0,tries:0};}
+function mulDigits(t,A,b,row,shift,allowMente,lastFull){ // A digits, b single digit, writes A*b right-aligned ending at col W-1-shift
+  const n=A.length,W=t.W;let carry=0;
+  for(let i=0;i<n;i++){const ai=A[n-1-i],c=W-1-i-shift,v=ai*b+carry,last=i===n-1;
+    const ask=carry?'Gang '+ai+' med '+b+', og legg til '+carry+' i mente.':'Hva er '+ai+' ganger '+b+'?';
+    const how=ai+' ganger '+b+' er '+ai*b+(carry?', pluss '+carry+' i mente blir '+v:'')+'.';
+    const x={plain:(ai*b)%10,carry};
+    if(last&&v>=10){oStep(t,row,c,v%10,ask+' Skriv enersifferet.',how+' Skriv '+v%10+' her.',x);oStep(t,row,c-1,Math.floor(v/10),'Skriv '+Math.floor(v/10)+' foran.',how+' Da skriver du '+Math.floor(v/10)+' foran.');}
+    else{oStep(t,row,c,v%10,ask+(v>=10?' Skriv enersifferet.':''),how+(v>=10?' Skriv '+v%10+(allowMente?', og skriv '+Math.floor(v/10)+' i mente.':', og husk '+Math.floor(v/10)+' i mente.'):' Skriv '+v+'.'),x);
+      if(allowMente&&!last&&v>=10)oStep(t,0,c-1,Math.floor(v/10),'Skriv '+Math.floor(v/10)+' i mente, lite, over neste siffer.','Mente skrives lite over sifferet du skal gange etterpå.',{mente:true});}
+    carry=Math.floor(v/10);}}
+function oppMul1(a,b){const A=digs(a),n=A.length,p=a*b,W=Math.max(n,digs(p).length)+1;
+  const t=oBase('mul1',W,4,[0]);t.a=a;t.b=b;t.label=a+' '+DOT+' '+b;t.spoken=a+' ganger '+b;t.answerText=sp(p);t.dir=-1;
+  A.forEach((d,i)=>oCell(t,1,W-n+i,d,'pre'));oCell(t,2,W-1,b,'pre');t.signs.push({r:2,c:0,ch:DOT});t.lines.push({r:2,c0:0,c1:W-1});
+  mulDigits(t,A,b,3,0,true);t.prodRow=3;return t;}
+function oppMul2(a,b){const A=digs(a),B=digs(b),b0=B[B.length-1],b1=B[0],p1=a*b0,p2=a*b1,p=a*b;
+  const W=Math.max(digs(p).length,digs(p2).length+1,A.length,B.length)+1;
+  const t=oBase('mul2',W,5);t.a=a;t.b=b;t.label=a+' '+DOT+' '+b;t.spoken=a+' ganger '+b;t.answerText=sp(p);t.dir=-1;
+  A.forEach((d,i)=>oCell(t,0,W-A.length+i,d,'pre'));B.forEach((d,i)=>oCell(t,1,W-B.length+i,d,'pre'));
+  t.signs.push({r:1,c:0,ch:DOT},{r:3,c:0,ch:'+'});t.lines.push({r:1,c0:0,c1:W-1},{r:3,c0:0,c1:W-1});
+  mulDigits(t,A,b0,2,0,false);
+  oStep(t,3,W-1,0,'Nå ganger du med '+b1+' tiere. Hva skriver du på enerplassen?','Du ganger med '+b1*10+', så det blir 0 på enerplassen.',{zero:true});
+  mulDigits(t,A,b1,3,1,false);
+  const P=digs(p),r1=String(p1),r2=String(p2*10);let carry=0;
+  for(let i=0;i<P.length;i++){const c=W-1-i;const d1=i<r1.length?+r1[r1.length-1-i]:null,d2=i<r2.length?+r2[r2.length-1-i]:null;
+    const parts=[d1,d2].filter(v=>v!=null);if(carry)parts.push(carry);const s=parts.reduce((q,v)=>q+v,0);
+    const ask=parts.length>1?'Legg sammen: '+parts.join(' pluss ')+'.':(d1==null&&d2==null?'Skriv '+s+' fra mente.':'Her er det bare '+s+'. Skriv det ned.');
+    oStep(t,4,c,P[P.length-1-i],ask,parts.join(' pluss ')+' er '+s+'. Skriv '+s%10+(s>=10&&i<P.length-1?', og husk 1 i mente.':'.'));carry=Math.floor(s/10);}
+  t.prodRow=4;return t;}
+function oppDiv(D,d){const Ds=digs(D),n=Ds.length,q=Math.floor(D/d),rem=D%d,Q=digs(q);
+  const qc=n+4,W=n+4+Q.length+(rem?3:0);const t=oBase('div',W,1);t.D=D;t.d=d;t.label=D+' : '+d;t.spoken=D+' delt på '+d;t.answerText=q+(rem?' rest '+rem:'');t.dir=1;t.q=q;t.rem=rem;
+  Ds.forEach((v,i)=>oCell(t,0,i+1,v,'pre'));oCell(t,0,n+2,d,'pre');t.signs.push({r:0,c:n+1,ch:':'},{r:0,c:n+3,ch:'='});
+  if(rem)t.signs.push({r:0,c:qc+Q.length,ch:'rest',span:2});
+  let pos=0,cur=Ds[0];while(cur<d&&pos<n-1){pos++;cur=cur*10+Ds[pos];}
+  let row=1,curRow=0,qi=0,maxRow=0;
+  for(;;){const qd=Math.floor(cur/d);
+    oStep(t,0,qc+qi,qd,'Hvor mange ganger går '+d+' i '+cur+'?',qd?d+' ganger '+qd+' er '+qd*d+', og '+d+' ganger '+(qd+1)+' er '+(qd+1)*d+', som er for mye. Skriv '+qd+'.':cur+' er mindre enn '+d+', så '+d+' går 0 ganger. Skriv 0.',{qcur:cur,qdiv:d});qi++;
+    if(qd>0){const pr=qd*d,PRd=digs(pr),L=PRd.length,end=pos+1;
+      PRd.forEach((v,j)=>oStep(t,row,end-L+1+j,v,j===0?'Hva er '+qd+' ganger '+d+'? Skriv svaret under '+cur+'.':'Skriv neste siffer.',qd+' ganger '+d+' er '+pr+'.'));
+      t.signs.push({r:row,c:end-L,ch:'−',sub:true});t.lines.push({r:row,c0:end-L,c1:end,sub:true});
+      const diff=cur-pr,more=pos<n-1,dr=row+1;
+      if(diff>0||!more){const DD=digs(diff);DD.forEach((v,j)=>oStep(t,dr,end-DD.length+1+j,v,j===0?cur+' minus '+pr+' er?':'Skriv neste siffer.',cur+' minus '+pr+' er '+diff+'.'));}
+      curRow=dr;cur=diff;row=dr+1;maxRow=Math.max(maxRow,dr);}
+    if(pos<n-1){pos++;const v=Ds[pos];oStep(t,curRow,pos+1,v,'Flytt ned '+v+'. Trykk på '+v+' oppe i stykket, eller på pila.','Neste siffer i '+D+' er '+v+'. Det flytter du ned.',{down:true,from:'0,'+(pos+1)});
+      cur=cur*10+v;maxRow=Math.max(maxRow,curRow);}
+    else break;}
+  if(rem)oStep(t,0,qc+Q.length+2,rem,'Hva blir resten?','Det som er igjen nederst, er resten. Skriv '+rem+'.');
+  t.rows=Array.from({length:maxRow+1},()=>({small:false}));t.qc=qc;t.qlen=Q.length;return t;}
+function withRegen(mk){const t=mk();t.regen=()=>withRegen(mk);return t;}
+/* tallgeneratorer per nivå */
+function gMulNoCarry(){const b=pick([2,3,4]),m=Math.floor(9/b);const a=rnd(1,m)*10+rnd(1,m);return oppMul1(a,b);}
+function gDivNoCarry(){const d=pick([2,3,4]),m=Math.floor(9/d);const q=rnd(1,m)*10+rnd(1,m);return oppDiv(q*d,d);}
+function gMulCarry(){let a,b;do{a=rnd(13,98);b=rnd(3,9);}while((a%10)*b<10);return oppMul1(a,b);}
+function gMul3(){let a,b;do{a=rnd(124,489);b=rnd(3,8);}while((a%10)*b<10);return oppMul1(a,b);}
+function gDiv2(){const d=rnd(3,6),q=rnd(12,49);return oppDiv(q*d,d);}
+function gDivZero(){let d,q;do{d=rnd(2,4);q=pick([1,2])*100+rnd(1,9);}while(String(q*d)[0]<d||q*d>999);return oppDiv(q*d,d);}
+function gMul2(){let a,b;do{a=rnd(12,49);b=rnd(12,39);}while(a%10===0||b%10===0);return oppMul2(a,b);}
+function gDivRest(){let D,d;do{d=rnd(3,9);D=rnd(110,999);}while(D%d===0);return oppDiv(D,d);}
+function oppTaskOf(g){return withRegen(g);}
+
+/* nivå per regneart, lagret i profilen: 0 = Malin viser, 1 = sammen, 2 = still opp selv */
+function oppLv(t){const p=PR();p.opp=p.opp||{};const k=t.op;return p.opp[k]||(p.opp[k]={lv:0,streak:0,fail:0});}
+function oppBegin(t){const L=oppLv(t);t.ent={};t.si=0;t.errs=0;t.tries=0;t.wrong=null;t.ok=false;t.anim=null;t.bad=null;t.hinted=false;t.sel=null;t.revealed=false;
+  t.mode=L.lv===0?'demo':L.lv===1?'sam':'ale';
+  if(t.mode==='ale'){say('Nå stiller du opp selv: '+t.spoken+'. Trykk på en rute og skriv. Trykk Ferdig når du er ferdig.');}
+  else if(t.mode==='demo'){t.demoT=2.6;t.demoNew=true;say('Først viser jeg deg hvordan vi regner '+t.spoken+'. Se på arket.');}
+  else oppAsk(t,'Vi regner '+t.spoken+' sammen. ');}
+function oppAsk(t,pre){const s=t.steps[t.si];if(!s){oppFinish(t);return;}say((pre||'')+s.ask);}
+function oppFixed(t,key){if(t.signs.some(s=>s.r+','+s.c===key||(s.span&&s.r+','+(s.c+1)===key)))return true;const c=t.cells[key];return !!(c&&c.kind==='pre'&&t.op==='div');}
+function oppShowPre(t){return t.mode!=='ale'||t.op==='div';}
+function oppDown(t){const s=t.steps[t.si];t.anim={from:s.from,to:s.key,v:s.v,t:0};t.ent[s.key]=s.v;t.si++;SFX.count();oppAsk(t);}
+function oppWhy(t,s,v){
+  if(s.qcur!=null){if(v*s.qdiv>s.qcur)return 'For mye! '+v+' ganger '+s.qdiv+' er '+v*s.qdiv+', og det er mer enn '+s.qcur+'.';if((v+1)*s.qdiv<=s.qcur)return 'Går '+s.qdiv+' en gang til i '+s.qcur+'? Prøv et større tall.';}
+  if(s.carry&&v===s.plain)return 'Nesten! Husket du '+s.carry+' i mente?';
+  if(s.zero)return 'Du ganger med tiere. Da blir det 0 på enerplassen.';
+  return 'Ikke helt. '+s.how;}
+function oppInput(t,k){
+  if(t.mode==='sam'){const s=t.steps[t.si];if(!s)return;
+    if(s.down){if(k==='⬇')oppDown(t);else{t.errs++;SFX.brake();say('Nå skal du flytte ned '+s.v+'. Trykk på '+s.v+' oppe i stykket, eller på pila.');}return;}
+    if(k==='⌫'||k==='⬇')return;const v=+k;
+    if(v===s.v){t.ent[s.key]=v;t.si++;t.bad=null;SFX.count();oppAsk(t);}else{t.errs++;t.bad={key:s.key,v,t:.9};SFX.brake();say(oppWhy(t,s,v));}return;}
+  if(t.mode==='ale'){if(!t.sel){say('Trykk på en rute først.');return;}
+    if(k==='⌫'){delete t.ent[t.sel];t.wrong&&t.wrong.delete(t.sel);return;}if(k==='⬇')return;
+    t.ent[t.sel]=+k;t.wrong&&t.wrong.delete(t.sel);const[r,c]=t.sel.split(',').map(Number);const preRow=Object.entries(t.cells).some(([q,cc])=>cc.kind==='pre'&&+q.split(',')[0]===r);const nc=c+(t.op==='div'||preRow?1:-1);
+    if(nc>=0&&nc<t.W&&!oppFixed(t,r+','+nc))t.sel=r+','+nc;}}
+function oppHint(t){t.hinted=true;
+  if(t.mode==='sam'){const s=t.steps[t.si];if(s)say(s.how);return;}
+  if(t.mode!=='ale')return;
+  if(t.op!=='div'){const setupDone=Object.entries(t.cells).every(([k,c])=>c.kind!=='pre'||t.ent[k]===c.v);
+    if(!setupDone){say('Skriv først tallene. Enerne skal stå under hverandre, helt til høyre.');return;}
+    say(t.op==='mul2'?'Gang med enerne først, så med tierne. Husk 0 på enerplassen i andre linje. Legg sammen til slutt.':'Begynn med enerne til høyre. Husk mente.');return;}
+  say('Hvor mange ganger går '+t.d+' i tallet? Gang, trekk fra, og flytt ned neste siffer.');}
+function oppRowMatches(t,row,expect){ // expect: {col:digit}
+  const ent=Object.keys(t.ent).filter(k=>+k.split(',')[0]===row);if(ent.length!==Object.keys(expect).length)return false;
+  return ent.every(k=>expect[+k.split(',')[1]]===t.ent[k]);}
+function oppDiag(t){
+  const wrongPre=[...t.wrong].some(k=>t.cells[k]&&t.cells[k].kind==='pre');
+  if(wrongPre)return 'Se på tallene øverst. Enerne skal stå under hverandre, helt til høyre.';
+  if(t.op==='mul1'){const A=digs(t.a),exp={};A.forEach((d,i)=>{const v=String(d*t.b);exp[t.W-A.length+i]=+v[v.length-1];});
+    if(oppRowMatches(t,t.prodRow,exp))return 'Det ser ut som du glemte mente.';}
+  if(t.op==='mul2'){const B=digs(t.b),v=String(t.a*B[0]),exp={};v.split('').forEach((d,i)=>exp[t.W-v.length+i]=+d);
+    if(oppRowMatches(t,3,exp))return 'I andre linje ganger du med tiere. Skriv 0 på enerplassen og flytt svaret ett hakk til venstre.';}
+  if(t.op==='div'){const qs=[];for(let i=0;i<t.qlen;i++){const v=t.ent['0,'+(t.qc+i)];if(v!=null)qs.push(v);}
+    const nz=String(t.q).replace(/0/g,'');if(String(t.q).includes('0')&&qs.join('')===nz)return 'Husk å skrive 0 i svaret når '+t.d+' ikke går i tallet.';
+    if(t.rem){const rv=t.ent['0,'+(t.qc+t.qlen+2)];if(rv!=null&&rv>=t.d)return 'Resten må være mindre enn '+t.d+'. Går '+t.d+' en gang til?';}}
+  return 'Noe er ikke helt riktig. Se på de røde rutene.';}
+function oppCheck(t){if(!Object.keys(t.ent).length){say('Skriv svaret i rutene først. Trykk på en rute, og skriv sifferet.');return;}const wrong=new Set();
+  for(const[k,c]of Object.entries(t.cells)){if(c.kind==='mente')continue;if(c.kind==='pre'&&t.op==='div')continue;if(t.ent[k]!==c.v)wrong.add(k);}
+  for(const k of Object.keys(t.ent))if(!t.cells[k]&&!t.rows[+k.split(',')[0]].small)wrong.add(k);
+  const L=oppLv(t);
+  if(!wrong.size){t.ok=true;t.wrong=null;const first=t.tries===0&&!t.hinted;if(first)L.fail=0;saveDB();oppScore(t,first);return;}
+  t.tries++;t.wrong=wrong;SFX.brake();const why=oppDiag(t);
+  if(t.tries>=2){L.fail=(L.fail||0)+1;let back='';if(L.fail>=2){L.lv=1;L.fail=0;L.streak=0;back=' Neste gang regner vi sammen igjen.';}saveDB();
+    for(const k of Object.keys(t.ent))if(!t.cells[k])delete t.ent[k];
+    for(const[k,c]of Object.entries(t.cells))if(c.kind!=='mente'&&!(c.kind==='pre'&&t.op==='div'))t.ent[k]=c.v;
+    t.revealed=true;say(why+' Slik skal det se ut. Svaret er '+t.answerText+'.'+back);CL.wait=4.5;CL.after=nextTask;}
+  else say(why+' Rett opp de røde rutene, og trykk Ferdig igjen.');}
+function oppFinish(t){const L=oppLv(t),first=t.errs===0&&!t.hinted;let extra='';
+  if(first){L.streak=(L.streak||0)+1;if(L.lv===1&&L.streak>=3){L.lv=2;L.streak=0;extra=' Nå kan du dette. Neste gang stiller du opp selv!';}}else L.streak=0;
+  saveDB();oppScore(t,first,extra);}
+function oppScore(t,first,extra){t.ok=true;if(first)CL.firstOk++;bonus(ptsFor(first));if(first)zGive(1);else zTask();
+  say((first?'Helt riktig, uten feil! Svaret er '+t.answerText+'. Det gir en hel billett.':'Riktig! Svaret er '+t.answerText+'. Det gir en halv billett.')+(extra||''));CL.wait=first?3:2.6;CL.after=nextTask;}
+function oppEndDemo(t){if(t.demoNew){oppLv(t).lv=Math.max(1,oppLv(t).lv);saveDB();const nt=t.regen();CL.tasks[CL.i]=nt;oppBegin(nt);nt.errs=0;if(nt.mode==='sam')say('Nå er det din tur! '+nt.spoken+'. '+nt.steps[0].ask);}
+  else{t.ent={};t.si=0;t.mode='sam';oppAsk(t,'Nå er det din tur. ');}}
+function oppUpdate(t,dt){if(t.bad){t.bad.t-=dt;if(t.bad.t<=0)t.bad=null;}if(t.anim){t.anim.t+=dt*2.2;if(t.anim.t>=1)t.anim=null;}
+  if(t.mode==='demo'){t.demoT-=dt;if(t.demoT>0)return;const s=t.steps[t.si];
+    if(!s){t.demoT=99;say('Ferdig! Svaret er '+t.answerText+'.');setTimeout(()=>{if(CL&&CL.tasks[CL.i]===t&&t.mode==='demo')oppEndDemo(t);},2600);return;}
+    if(s.down)t.anim={from:s.from,to:s.key,v:s.v,t:0};t.ent[s.key]=s.v;t.si++;say(s.how);t.demoT=Math.max(2.6,s.how.length*.075);}}
+/* tegning */
+function oppGeom(t){const units=t.rows.reduce((s,r)=>s+(r.small?.55:1),0);const cs=Math.min(36,Math.floor(GA.w/t.W),Math.floor(GA.h/units));
+  const gx=GA.x+Math.round((GA.w-t.W*cs)/2);const ys=[];let y=GA.y;t.rows.forEach(r=>{ys.push(y);y+=(r.small?.55:1)*cs;});return{cs,gx,ys,hs:t.rows.map(r=>(r.small?.55:1)*cs)};}
+function oppCellAt(t,G,x,y){for(let r=0;r<t.rows.length;r++){if(y>=G.ys[r]&&y<G.ys[r]+G.hs[r]){const c=Math.floor((x-G.gx)/G.cs);if(c>=0&&c<t.W)return r+','+c;}}return null;}
+function oppVal(t,key){const c=t.cells[key];if(c&&c.kind==='pre'&&oppShowPre(t))return c.v;if(t.anim&&t.anim.to===key)return null;return t.ent[key]!=null?t.ent[key]:null;}
+function oppRowUsed(t,r){if(t.revealed||t.ok)return true;if(t.mode==='ale')return Object.keys(t.ent).some(k=>+k.split(',')[0]===r);const j=t.steps.findIndex(s=>+s.key.split(',')[0]===r&&!s.down&&s.qcur==null);return j>=0&&j<=t.si;}
+function oppDraw(){const t=CL&&CL.stage!=='grid'&&CL.stage!=='choose'&&CL.tasks[Math.min(CL.i,CL.tasks.length-1)];if(!t||t.kind!=='opp')return;
+  fRR(OS.x+3,OS.y+5,OS.w,OS.h,12,'rgba(0,0,0,.22)');fRR(OS.x,OS.y,OS.w,OS.h,12,'#fdfcf6');sRR(OS.x,OS.y,OS.w,OS.h,12,'#c9c2ad',1.5);
+  hx.fillStyle='#e9b8b8';hx.fillRect(OS.x+10,OS.y+8,1.5,OS.h-16);
+  const hl=LVL[CL.lvl]+'  ·  '+LVLDESC.matte[CL.lvl];tx(hl,GA.x,OS.y+18,fitS(hl,GA.w,12,true),'#6a6a72','left',true);
+  for(let i=0;i<5;i++)zStar(OB.vis.x+7+i*15,OS.y+18,6,i<CL.i||CL.stage==='done');
+  tx('🎟 '+PR().tickets+(PR().half?' ½':''),OB.vis.x+OB.vis.w,OS.y+18,13,'#8a6a10','right',true);
+  const mode={demo:'Malin viser',sam:'Sammen med Malin',ale:'Still opp selv'}[t.mode]||'';
+  const big=t.mode==='ale'&&t.op!=='div'?'Still opp og regn ut: '+t.label:'Regn ut: '+t.label;
+  tx(big,GA.x,OS.y+46,fitS(big,GA.w-10,22,true),'#1b2a4a','left',true);
+  const mw=(setF(11,true),hx.measureText(mode).width+16);fRR(GA.x,OS.y+60,mw,18,9,t.mode==='ale'?'#2f8a4a':t.mode==='demo'?'#7a4ab0':'#2f6fe0');tx(mode,GA.x+mw/2,OS.y+69,11,'#fff','center',true);
+  const G=oppGeom(t),cs=G.cs;const s=t.mode!=='ale'?t.steps[t.si]:null;
+  for(let r=0;r<t.rows.length;r++)for(let c=0;c<t.W;c++){const key=r+','+c,x=G.gx+c*cs,y=G.ys[r],h=G.hs[r];
+    let bg=null;if(s&&s.key===key&&t.mode==='sam'&&!s.down)bg='#fff1a0';if(t.mode==='ale'&&t.sel===key)bg='#fff1a0';
+    if(t.wrong&&t.wrong.has(key))bg='#ffd0d0';if(t.ok&&t.ent[key]!=null&&!(t.cells[key]&&t.cells[key].kind==='pre'&&t.op==='div'))bg='#d6f3d6';
+    if(bg){hx.fillStyle=bg;hx.fillRect(x,y,cs,h);}
+    hx.strokeStyle=t.rows[r].small?'#e3ecf8':'#c8daf2';hx.lineWidth=1;hx.strokeRect(x+.5,y+.5,cs,h);
+    if(t.mode==='ale'&&t.sel===key){hx.strokeStyle='#e0a800';hx.lineWidth=2.5;hx.strokeRect(x+1.5,y+1.5,cs-3,h-3);}}
+  for(const sg of t.signs){if(sg.sub&&!oppRowUsed(t,sg.r))continue;const x=G.gx+sg.c*cs,y=G.ys[sg.r],h=G.hs[sg.r];
+    if(sg.ch==='rest')tx('rest',x+cs,y+h/2+1,cs*.48,'#1b2a4a','center',true);else tx(sg.ch,x+cs/2,y+h/2+1,cs*.66,'#1b2a4a','center',true);}
+  for(const ln of t.lines){if(ln.sub&&!oppRowUsed(t,ln.r))continue;const y=G.ys[ln.r]+G.hs[ln.r];hx.fillStyle='#1b2a4a';hx.fillRect(G.gx+ln.c0*cs+2,y-1.5,(ln.c1-ln.c0+1)*cs-4,2.5);}
+  for(let r=0;r<t.rows.length;r++)for(let c=0;c<t.W;c++){const key=r+','+c,v=oppVal(t,key);if(v==null)continue;const x=G.gx+c*cs,y=G.ys[r],h=G.hs[r];
+    const cc=t.cells[key];const pre=cc&&cc.kind==='pre'&&oppShowPre(t);const small=t.rows[r].small;
+    tx(String(v),x+cs/2,y+h/2+1,small?h*.8:cs*.7,small?'#c0392b':pre?'#1b2a4a':(t.revealed&&t.wrong&&t.wrong.has(key))?'#2f8a4a':'#2448a8','center',!small);}
+  if(t.bad){const[r,c]=t.bad.key.split(',').map(Number);const x=G.gx+c*cs,y=G.ys[r],h=G.hs[r];hx.fillStyle='rgba(220,40,40,.22)';hx.fillRect(x,y,cs,h);tx(String(t.bad.v),x+cs/2,y+h/2+1,t.rows[r].small?h*.8:cs*.7,'#c0392b','center',true);}
+  if(s&&s.down&&t.mode==='sam'){const[fr,fc]=s.from.split(',').map(Number),[tr,tc]=s.key.split(',').map(Number);const fx=G.gx+fc*cs+cs/2,fy=G.ys[fr]+cs/2,ty=G.ys[tr]+cs/2;
+    const pulse=1+Math.sin(T*6)*.12;hx.strokeStyle='#e0a800';hx.lineWidth=3;hx.beginPath();hx.arc(fx,fy,cs*.48*pulse,0,Math.PI*2);hx.stroke();
+    hx.setLineDash([5,5]);hx.strokeStyle='#e08a00';hx.lineWidth=2;hx.beginPath();hx.moveTo(fx,fy+cs*.5);hx.lineTo(fx,ty-cs*.35);hx.stroke();hx.setLineDash([]);
+    hx.fillStyle='#e08a00';hx.beginPath();hx.moveTo(fx-6,ty-cs*.42);hx.lineTo(fx+6,ty-cs*.42);hx.lineTo(fx,ty-cs*.28);hx.closePath();hx.fill();}
+  if(t.anim){const[fr,fc]=t.anim.from.split(',').map(Number),[tr,tc]=t.anim.to.split(',').map(Number);const k=t.anim.t;const x=G.gx+(fc+(tc-fc)*k)*cs+cs/2,y=G.ys[fr]+(G.ys[tr]-G.ys[fr])*k+cs/2;tx(String(t.anim.v),x,y,cs*.7,'#e08a00','center',true);}
+  if(t.mode==='demo'){zBtn(OB.vis,'Hopp over ▸','#7a4ab0',15);return;}
+  if(t.mode==='sam')zBtn(OB.vis,'👀 Vis meg','#7a4ab0',15);
+  zBtn(OB.hint,'💡 Hint','#c8962a',15);
+  oppKeys(t).forEach(r=>{fRR(r.x,r.y+2,r.w,r.h,8,'rgba(0,0,0,.18)');fRR(r.x,r.y,r.w,r.h,8,r.k==='⬇'?'#e08a00':'#ffffff');sRR(r.x,r.y,r.w,r.h,8,'#b8b0a0',1.5);tx(r.k,r.x+r.w/2,r.y+r.h/2+1,20,r.k==='⬇'?'#fff':'#1b2a4a','center',true);});
+  if(t.mode==='ale')zBtn(OB.done,'Ferdig ✓','#2f8a4a',16);}
+function oppKeys(t){const r=[],w=40,h=38,g=6,x0=OB.vis.x,y0=172;
+  ['7','8','9','4','5','6','1','2','3'].forEach((k,i)=>r.push({k,x:x0+(i%3)*(w+g),y:y0+Math.floor(i/3)*(h+g),w,h}));
+  const y3=y0+3*(h+g);r.push({k:'⌫',x:x0,y:y3,w,h},{k:'0',x:x0+w+g,y:y3,w,h});if(t.op==='div'&&t.mode==='sam')r.push({k:'⬇',x:x0+2*(w+g),y:y3,w,h});return r;}
+function oppTap(t,x,y){
+  if(t.mode==='demo'){if(hit(OB.vis,x,y)){t.demoT=99;oppEndDemo(t);}return;}
+  if(t.ok||t.revealed)return;
+  if(t.mode==='sam'&&hit(OB.vis,x,y)){t.mode='demo';t.demoNew=false;t.ent={};t.si=0;t.hinted=true;t.demoT=1.8;say('Jeg viser deg. Se godt etter.');return;}
+  if(hit(OB.hint,x,y)){oppHint(t);return;}
+  if(t.mode==='ale'&&hit(OB.done,x,y)){oppCheck(t);return;}
+  const k=oppKeys(t).find(r=>hit(r,x,y));if(k){tone(880,.03,{type:'square'});oppInput(t,k.k);return;}
+  const key=oppCellAt(t,oppGeom(t),x,y);if(!key)return;
+  if(t.mode==='sam'){const s=t.steps[t.si];if(s&&s.down&&key===s.from)oppDown(t);return;}
+  if(t.mode==='ale'&&!oppFixed(t,key)){t.sel=key;tone(700,.03,{type:'sine'});}}
 
 /* ================= map interlude (sekk-tur) ================= */
 let KT=null;
@@ -1231,14 +1457,14 @@ Object.assign(PLACE,{hub:'Skolekartet',meny:'',bibl:'Biblioteket',ah:'Airhockey'
 function genHi(subj,L){const T=[];
   if(subj==='matte'){const f=v=>String(Math.round(v*100)/100).replace('.',',');
     for(let i=0;i<5;i++){
-      if(L===8){if(i<3){const a=rnd(12,49),b=rnd(3,9);T.push(mathTask(a,'×',b,4,[b,-b,10,-10,1],false));}else{const b=rnd(3,9),q=rnd(12,30);T.push(mathTask(q*b,':',b,4,[1,-1,2,-2,10],false));}}
+      if(L===8){T.push(oppTaskOf([gMul2,gDivRest,gMul2,gDivRest,gMul3][i]));}
       if(L===9){const k=i%3;
-        if(k===0){const d=pick([2,3,4,5]),n=d*rnd(3,12),ans=n/d,o=numOpts(ans,4,[1,-1,2,-2,d]);T.push(mc({q:['1/'+d+' AV '+n+' = ?'],say:'Hva er en '+['','','halvdel','tredel','firedel','femdel'][d]+' av '+n+'?',opts:o.map(v=>({n:v})),ans:o.indexOf(ans),reveal:String(ans)}));}
-        else if(k===1){const n=4*rnd(2,10),ans=3*n/4,o=numOpts(ans,4,[n/4,-n/4,1,-1]);T.push(mc({q:['3/4 AV '+n+' = ?'],say:'Hva er tre firedeler av '+n+'?',opts:o.map(v=>({n:v})),ans:o.indexOf(ans),reveal:String(ans)}));}
+        if(k===0){const d=pick([2,3,4,5]),n=d*rnd(3,12),ans=n/d;T.push(numTask('1/'+d+' av '+n+' = ?',ans,'Hva er en '+['','','halvdel','tredel','firedel','femdel'][d]+' av '+n+'?'));}
+        else if(k===1){const n=4*rnd(2,10),ans=3*n/4;T.push(numTask('3/4 av '+n+' = ?',ans,'Hva er tre firedeler av '+n+'?'));}
         else{const a=rnd(1,4)+rnd(1,9)/10,b=pick([.5,.25,.75,.2]),ans=Math.round((a+b)*100)/100;const set=new Set([ans]);for(const d of shuffle([.1,-.1,1,.25,-.05,-1])){if(set.size>=4)break;const v=Math.round((ans+d)*100)/100;if(v>0)set.add(v);}
-          const o=shuffle([...set]);T.push(mc({q:[f(a)+' + '+f(b)+' = ?'],say:'Hva er '+f(a)+' pluss '+f(b)+'?',opts:o.map(v=>({t:f(v)})),ans:o.indexOf(ans),reveal:f(ans)}));}}}}
+          T.push(numTask(f(a)+' + '+f(b)+' = ?',f(ans),'Hva er '+f(a)+' pluss '+f(b)+'?',{dec:true}));}}}}
   if(subj==='engelsk'){
-    if(L===8){const QA=[['WHAT IS YOUR NAME?','MY NAME IS '+CH.name.toUpperCase(),['I AM FINE','IT IS RED']],['HOW OLD ARE YOU?','I AM SEVEN',['I AM FINE','IT IS A DOG']],['HOW ARE YOU?','I AM FINE, THANK YOU',['I AM SEVEN','MY NAME IS TOM']],['WHERE DO YOU LIVE?','I LIVE IN NORWAY',['I LIKE PIZZA','IT IS MONDAY']],['WHAT COLOUR IS THE SUN?','IT IS YELLOW',['IT IS A CAT','I AM HAPPY']],['WHAT DO YOU LIKE?','I LIKE FOOTBALL',['I AM FINE','IT IS BLUE']],['WHAT DAY IS IT TODAY?','IT IS FRIDAY',['IT IS GREEN','I LIKE CATS']],['DO YOU HAVE A PET?','YES, I HAVE A DOG',['NO, IT IS RED','I AM TEN']]];
+    if(L===8){const QA=[['WHAT IS YOUR NAME?','MY NAME IS '+CH.name.toUpperCase(),['I AM FINE','IT IS RED']],['HOW OLD ARE YOU?','I AM '+ageOf().en,['I AM FINE','IT IS A DOG']],['HOW ARE YOU?','I AM FINE, THANK YOU',['I AM SEVEN','MY NAME IS TOM']],['WHERE DO YOU LIVE?','I LIVE IN NORWAY',['I LIKE PIZZA','IT IS MONDAY']],['WHAT COLOUR IS THE SUN?','IT IS YELLOW',['IT IS A CAT','I AM HAPPY']],['WHAT DO YOU LIKE?','I LIKE FOOTBALL',['I AM FINE','IT IS BLUE']],['WHAT DAY IS IT TODAY?','IT IS FRIDAY',['IT IS GREEN','I LIKE CATS']],['DO YOU HAVE A PET?','YES, I HAVE A DOG',['NO, IT IS RED','I AM TEN']]];
       for(const x of shuffle(QA).slice(0,5))T.push(rowsTask({q:[x[0]],say:'Hva er et godt svar?',en:x[0].toLowerCase(),enOk:x[1].toLowerCase()},x[1],x[2]));}
     if(L===9){const GR=[['THE CATS ___ HUNGRY.','ARE',['IS','AM']],['SHE ___ A BIKE.','HAS',['HAVE','HAVING']],['WE ___ TO SCHOOL.','GO',['GOES','GOING']],['HE ___ FOOTBALL.','PLAYS',['PLAY','PLAYING']],['THEY ___ MY FRIENDS.','ARE',['IS','AM']],['MY DOG ___ BROWN.','IS',['ARE','AM']],['I ___ TWO BROTHERS.','HAVE',['HAS','IS']],['ONE MOUSE, TWO ___.','MICE',['MOUSES','MOUSE']],['ONE CHILD, TWO ___.','CHILDREN',['CHILDS','CHILDES']]];
       for(const x of shuffle(GR).slice(0,5))T.push(rowsTask({q:[x[0]],say:'Hvilket ord passer?',en:x[0].replace('___','blank').toLowerCase(),enOk:x[0].replace('___',x[1]).toLowerCase()},x[1],x[2]));}}
@@ -1353,12 +1579,13 @@ function hubStatic(){
   zSign('Skolegården','1 🎟',300,350);
   txo('Jong skole',20,36,22,'#fff','left',true);}
 const HKIDS=[{x:380,y:300,c:'#e05a3a',v:18},{x:450,y:200,c:'#3a7ad8',v:-14},{x:290,y:270,c:'#f0c030',v:12}];
-function hubDraw(){zCached('hub-'+PR().trinn,hubStatic);
-  for(const k of HKIDS){k.x+=k.v*.016;if(k.x<260||k.x>520)k.v=-k.v;const y=k.y+(k.x-380)*-.18;if(inPoly(k.x,y,YARD)){circ(k.x+1.5,y+2,4,'rgba(0,0,0,.25)');circ(k.x,y,4,k.c);circ(k.x,y-.5,2.2,'#f3c9a4');}}
+let hubT=null;
+function hubDraw(){zCached('hub-'+PR().trinn,hubStatic);const hd=hubT==null?0:Math.min(.05,Math.max(0,T-hubT));hubT=T;
+  for(const k of HKIDS){k.x+=k.v*hd;if(k.x<260||k.x>520)k.v=-k.v;const y=k.y+(k.x-380)*-.18;if(inPoly(k.x,y,YARD)){circ(k.x+1.5,y+2,4,'rgba(0,0,0,.25)');circ(k.x,y,4,k.c);circ(k.x,y-.5,2.2,'#f3c9a4');}}
   emo('🐦',366,262+Math.sin(T*3)*1.5,15);
   zBtn(HUBB.album,'📒 Album','#6a4ab0',18);zBtn(HUBB.hjem,'🏠 Hjem','#2f7a8a',18);zBadge(212,36);}
 function goHub(){if(dlg){dq=[];dlg=null;$('dlg').hidden=true;}CL=null;setScene('hub','in');const p=PR();
-  if(!p.seen.hub2){p.seen.hub2=1;saveDB();talk(null,'Velkommen til Jong skole! Trykk på klasserommet for å tjene billetter. To riktige oppgaver gir én billett. Spillrommet, SFO og skolegården koster én billett per spill. Biblioteket er gratis.');}}
+  if(!p.seen.hub2){p.seen.hub2=1;saveDB();talk(null,'Velkommen til Jong skole! Trykk på klasserommet for å tjene billetter. To oppgaver riktig på første forsøk gir én billett. Spillrommet, SFO og skolegården koster én billett per spill. Biblioteket er gratis.');}}
 function hubTap(x,y){if(hit(HUBB.album,x,y)){SFX.door();zAlbum();return;}
   if(hit(HUBB.hjem,x,y)){ask(null,'Vil du gå hjem for i dag? Billettene dine blir liggende til neste gang.',['Ja, gå hjem','Nei, bli på skolen'],i=>{if(i===0){saveDB();CL=null;S.scene='start';updStatus();openStart();}});return;}
   const b=HUBHIT.find(h=>inPoly(x,y,h.p));if(!b)return;SFX.door();
