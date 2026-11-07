@@ -1751,20 +1751,6 @@ function zTree(x,y,r){circ(x+r*.3,y+r*.35,r,'rgba(0,0,0,.2)');circ(x,y,r,'#2c542
 /* windows along a facade between ground points a and b, `off` above ground */
 function zWins(a,b,off,n,w,h,col,from,to){from=from||0;to=to||1;for(let i=0;i<n;i++){const t=from+(to-from)*(i+.5)/n,p=zLerp(a,b,t);hx.fillStyle=col;hx.fillRect(p[0]-w/2,p[1]-off-h,w,h);}}
 /* building footprints, ground points: [backLeft, backRight, frontRight, frontLeft] */
-const JB={
-  main:{g:[[300,100],[562,88],[566,140],[304,152]],h:50},
-  bib:{g:[[190,140],[296,128],[320,196],[214,208]],h:40},
-  spill:{g:[[140,200],[272,158],[292,198],[160,240]],h:26,ridge:18},
-  sfo:{g:[[8,252],[142,206],[162,246],[28,292]],h:26,ridge:18},
-  annex:{g:[[236,226],[284,212],[292,250],[244,264]],h:20}};
-const YARD=[[150,400],[176,300],[300,214],[318,204],[570,146],[626,170],[502,234],[440,238],[424,400]];
-const HUBB={album:{x:16,y:56,w:112,h:40},hjem:{x:136,y:56,w:100,h:40}};
-const HUBHIT=[
-  {id:'sfo',p:[[8,208],[142,162],[162,246],[28,292]]},
-  {id:'spill',p:[[140,156],[272,114],[296,196],[296,262],[244,268],[160,240]]},
-  {id:'bibl',p:[[190,100],[296,88],[322,158],[322,198],[214,210],[190,142]]},
-  {id:'klasse',p:[[300,50],[562,38],[568,140],[304,154]]},
-  {id:'gard',p:YARD}];
 function zGable(B,wall,gable,roofA,roofB){const g=B.g,H=B.h,R=B.ridge,u=zRaise(g,H);
   zPoly([g[3],g[2],u[2],u[3]],wall);
   const rl=zRaise([zLerp(g[0],g[3],.5)],H+R)[0],rr2=zRaise([zLerp(g[1],g[2],.5)],H+R)[0];
@@ -1774,70 +1760,116 @@ function zGable(B,wall,gable,roofA,roofB){const g=B.g,H=B.h,R=B.ridge,u=zRaise(g
   hx.strokeStyle='rgba(0,0,0,.18)';hx.lineWidth=1;for(let t=.08;t<1;t+=.08){const a=zLerp(rl,rr2,t),b=zLerp(u[3],u[2],t);hx.beginPath();hx.moveTo(a[0],a[1]);hx.lineTo(b[0],b[1]);hx.stroke();}}
 function zSign(txt,sub,x,y){setF(16,true);const w=hx.measureText(txt).width+22;fRR(x-w/2+1,y-13+2,w,26,8,'rgba(0,0,0,.3)');fRR(x-w/2,y-13,w,26,8,'#fffaf0');sRR(x-w/2,y-13,w,26,8,'#3a2a1a',1.5);tx(txt,x,y+1,16,'#2a1a10','center',true);
   if(sub){setF(12,true);const sw=hx.measureText(sub).width+14;fRR(x-sw/2,y+15,sw,18,9,'rgba(20,15,30,.75)');tx(sub,x,y+24.5,12,'#fff','center',true);}}
+/* Jong skole sett ovenfra, tegnet etter flyfoto (kamera fra sør). r = taket slik det ses, h = vegghøyde. */
+const JB={
+  sfo:{r:[[140,190],[188,170],[200,198],[152,218]],h:18,wall:'#78808c',roof:'#b6bbc1',fl:1},
+  spill:{r:[[188,165],[262,133],[282,163],[208,196]],h:17,wall:'#858d98',roof:'#a8adb3',fl:1},
+  ann:{r:[[254,173],[276,164],[284,184],[262,194]],h:12,wall:'#8a929c',roof:'#9da2a8',fl:1},
+  bib:{r:[[226,127],[268,106],[304,122],[262,146]],h:20,wall:'#c9ccd0',roof:'#9da2a9',fl:1,box:[[252,118],[272,108],[290,116],[270,127]]},
+  ent:{r:[[278,104],[340,82],[354,98],[292,122]],h:24,wall:'#f1f2ef',roof:'#9a9fa6',fl:2},
+  main:{r:[[356,82],[378,68],[512,130],[488,144]],h:28,wall:'#eef0ee',roof:'#8d929a',fl:3,box:[[402,88],[430,78],[452,90],[426,101]]},
+  end:{r:[[455,138],[505,114],[532,138],[482,162]],h:24,wall:'#f3f3f1',roof:'#9a9fa6',fl:3,red:true},
+  front:{r:[[202,322],[300,262],[318,290],[218,350]],h:12,wall:'#9a4a34',roof:'#7f858d',fl:1},
+  front2:{r:[[300,247],[338,232],[352,252],[314,268]],h:16,wall:'#b25a3c',roof:'#8a9098',fl:1},
+  front3:{r:[[330,266],[355,251],[400,288],[374,303]],h:9,wall:'#8a8e96',roof:'#a0a5ab',fl:1},
+  shed:{r:[[272,384],[298,372],[312,392],[286,402]],h:8,wall:'#9a4a34',roof:'#6f747c',fl:0},
+  blokk1:{r:[[544,18],[566,4],[640,58],[640,98]],h:26,wall:'#e2e4e6',roof:'#9fa4aa',fl:4},
+  blokk2:{r:[[543,292],[596,268],[618,300],[565,326]],h:22,wall:'#e6e7e8',roof:'#9a9fa5',fl:3},
+  blokk3:{r:[[552,346],[610,320],[640,352],[584,380]],h:24,wall:'#e6e7e8',roof:'#9a9fa5',fl:3},
+  garasje:{r:[[585,222],[640,205],[640,224],[594,241]],h:6,wall:'#7c8088',roof:'#8e939a',fl:0}};
+const YARD=[[0,336],[62,290],[104,252],[150,236],[205,214],[258,200],[300,160],[332,140],[372,134],[405,150],[412,190],[392,212],[340,236],[300,258],[204,318],[190,350],[140,362],[120,400],[0,400]];
+const HUBB={album:{x:16,y:56,w:112,h:40},hjem:{x:16,y:102,w:112,h:40}};
+const HSIGN=[{id:'klasse',x:432,y:104},{id:'bibl',x:268,y:66,to:[266,124]},{id:'spill',x:262,y:224,to:[238,170]},{id:'sfo',x:136,y:168,to:[166,192]},{id:'gard',x:110,y:300}];
+function zGround(B){return B.r.map(p=>[p[0],p[1]+B.h]);}
+function zHull(P){const p=P.slice().sort((a,b)=>a[0]-b[0]||a[1]-b[1]);const cr=(o,a,b)=>(a[0]-o[0])*(b[1]-o[1])-(a[1]-o[1])*(b[0]-o[0]);const lo=[],up=[];
+  for(const q of p){while(lo.length>1&&cr(lo[lo.length-2],lo[lo.length-1],q)<=0)lo.pop();lo.push(q);}
+  for(const q of p.slice().reverse()){while(up.length>1&&cr(up[up.length-1-1],up[up.length-1],q)<=0)up.pop();up.push(q);}
+  return lo.slice(0,-1).concat(up.slice(0,-1));}
+function zOutline(B){return zHull(B.r.concat(zGround(B)));}
+const HUBHIT=[
+  {id:'sfo',p:zOutline(JB.sfo)},
+  {id:'spill',p:zOutline(JB.spill)},{id:'spill',p:zOutline(JB.ann)},
+  {id:'bibl',p:zOutline(JB.bib)},
+  {id:'klasse',p:zOutline(JB.ent)},{id:'klasse',p:zOutline(JB.main)},{id:'klasse',p:zOutline(JB.end)},
+  {id:'gard',p:YARD}];
+function zShadow(B){const g=zGround(B),k=B.h;zPoly(zHull(g.concat(g.map(p=>[p[0]-k*.9,p[1]-k*.55]))),'rgba(20,30,20,.22)');}
+function zFaceWins(a,b,H,fl,col,red){const L=Math.hypot(b[0]-a[0],b[1]-a[1]),n=Math.max(1,Math.floor(L/9));
+  for(let k=0;k<fl;k++){const fh=H/fl,y0=fh*k+fh*.3,wh=fh*.42;
+    for(let i=0;i<n;i++){const p0=zLerp(a,b,(i+.22)/n),p1=zLerp(a,b,(i+.78)/n);
+      zPoly([[p0[0],p0[1]-y0],[p1[0],p1[1]-y0],[p1[0],p1[1]-y0-wh],[p0[0],p0[1]-y0-wh]],red&&(i+k)%3===0?'#d4402e':col);}}}
+function zBlock(B){const g=zGround(B),r=B.r,n=r.length;let A=0;for(let i=0;i<n;i++){const p=r[i],q=r[(i+1)%n];A+=p[0]*q[1]-q[0]*p[1];}const sg=A>0?1:-1;
+  for(let i=0;i<n;i++){const a=g[i],b=g[(i+1)%n],dx=b[0]-a[0],dy=b[1]-a[1],nx=dy*sg,ny=-dx*sg;if(ny<=0)continue;
+    const lit=nx/Math.hypot(nx,ny),col=lit>.2?mix(B.wall,'#ffffff',.1):shade(B.wall,.8);
+    zPoly([a,b,r[(i+1)%n],r[i]],col);
+    if(B.fl)zFaceWins(a,b,B.h,B.fl,lit>.2?'#4c5a6a':'#3c4856',B.red&&lit>.2);
+    hx.strokeStyle='rgba(0,0,0,.18)';hx.lineWidth=.8;hx.beginPath();hx.moveTo(a[0],a[1]);hx.lineTo(b[0],b[1]);hx.stroke();}
+  zPoly(r,B.roof);hx.strokeStyle=mix(B.roof,'#ffffff',.35);hx.lineWidth=1.4;hx.beginPath();r.forEach((p,i)=>i?hx.lineTo(p[0],p[1]):hx.moveTo(p[0],p[1]));hx.closePath();hx.stroke();
+  if(B.box){zPoly(B.box.map(p=>[p[0],p[1]+3]),shade(B.roof,.8));zPoly(B.box,mix(B.roof,'#ffffff',.18));}}
+function zCar(x,y,col){fRR(x-5,y-3,10,6,2,col);fRR(x-3,y-2,6,4,1.5,'rgba(255,255,255,.35)');}
 function hubStatic(){
-  let g=hx.createLinearGradient(0,0,0,400);g.addColorStop(0,'#86b462');g.addColorStop(1,'#6a9a4a');hx.fillStyle=g;hx.fillRect(0,0,640,400);
-  hx.fillStyle='rgba(255,255,255,.06)';for(let i=0;i<9;i++){hx.save();hx.translate(0,0);zPoly([[0,30+i*22],[300,i*18],[300,i*18+10],[0,40+i*22]],'rgba(255,255,255,.035)');hx.restore();}
-  hx.strokeStyle='#d8d4c8';hx.lineWidth=9;hx.lineCap='round';hx.beginPath();hx.moveTo(-10,150);hx.quadraticCurveTo(120,128,200,112);hx.quadraticCurveTo(250,100,300,60);hx.stroke();
-  hx.beginPath();hx.moveTo(250,18);hx.quadraticCurveTo(300,40,330,30);hx.stroke();
-  // apartment block top right
-  zPoly([[480,10],[640,4],[640,30],[484,36]],'#d4d8dc');hx.fillStyle='#8a96a4';for(let i=0;i<8;i++)hx.fillRect(492+i*18,16,10,6);
-  // schoolyard
-  zPoly(YARD,'#a7aaad');hx.fillStyle='rgba(0,0,0,.05)';for(let i=0;i<500;i++){const x=150+(i*97)%480,y=150+(i*61)%250;if(inPoly(x,y,YARD))hx.fillRect(x,y,2,1.5);}
-  hx.strokeStyle='rgba(255,255,255,.75)';hx.lineWidth=1.6;hx.beginPath();hx.ellipse(250,372,64,26,-.25,Math.PI,2*Math.PI);hx.stroke();
-  hx.beginPath();hx.moveTo(200,388);hx.lineTo(330,340);hx.stroke();hx.beginPath();hx.ellipse(388,312,34,14,-.25,0,6.283);hx.stroke();
-  hx.beginPath();hx.moveTo(440,300);hx.lineTo(500,284);hx.stroke();
-  // play structure
-  zPoly([[338,232],[424,224],[430,256],[344,264]],'#5c4838');zPoly([[344,236],[420,229],[424,252],[348,259]],'#7a6048');hx.strokeStyle='#3a2a1a';hx.lineWidth=2;for(let i=0;i<5;i++){const a=zLerp([348,238],[420,231],i/4);hx.beginPath();hx.moveTo(a[0],a[1]);hx.lineTo(a[0]+3,a[1]+20);hx.stroke();}
-  // small goal
-  hx.strokeStyle='#fff';hx.lineWidth=2.4;hx.beginPath();hx.moveTo(346,290);hx.lineTo(348,274);hx.lineTo(384,268);hx.lineTo(386,284);hx.stroke();hx.strokeStyle='rgba(255,255,255,.45)';hx.lineWidth=.8;for(let i=1;i<6;i++){hx.beginPath();hx.moveTo(348+i*6,273-i);hx.lineTo(350+i*6,288-i);hx.stroke();}
-  // basket hoop
-  hx.fillStyle='#5a5e66';hx.fillRect(203,316,3,30);fRR(196,306,18,12,2,'#fff');hx.strokeStyle='#ff7a20';hx.lineWidth=2;hx.beginPath();hx.ellipse(205,322,6,2.4,0,0,6.283);hx.stroke();
-  // main building (1. klasse)
-  {const B=JB.main,g=B.g,u=zRaise(g,B.h);
-    zPoly([g[2],g[1],u[1],u[2]],'#c4c6c4');zPoly([g[3],g[2],u[2],u[3]],'#ecedea');
-    for(let k=0;k<3;k++)zWins(g[3],g[2],8+k*15,20,8,8,k===0?'#4a5866':'#7b8a99');
-    const s1=zLerp(g[3],g[2],.62),s2=zLerp(g[3],g[2],.69);zPoly([s1,s2,[s2[0],s2[1]-B.h],[s1[0],s1[1]-B.h]],'#8a929c');
-    zPoly(u,'#575b63');zPoly([[440,62],[500,58],[503,80],[443,84]],'#6c7079');zPoly([[516,52],[556,49],[559,70],[519,73]],'#5d6f9a');zPoly([[322,64],[380,60],[382,74],[324,78]],'#666a72');
-    hx.strokeStyle='#8a8e96';hx.lineWidth=1.5;hx.beginPath();u.forEach((p,i)=>i?hx.lineTo(p[0],p[1]):hx.moveTo(p[0],p[1]));hx.closePath();hx.stroke();}
-  zTree(574,130,15);zTree(596,108,13);zTree(178,54,15);zTree(205,40,11);
-  // library building (light roof, solar panels)
-  {const B=JB.bib,g=B.g,u=zRaise(g,B.h);
-    zPoly([g[2],g[1],u[1],u[2]],'#f2f3f1');zPoly([g[3],g[2],u[2],u[3]],'#d4d6d4');
-    for(let k=0;k<2;k++)zWins(g[1],g[2],10+k*15,6,10,9,'#6d8aa6',.08,.92);
-    zWins(g[3],g[2],10,5,10,8,'#7b8a99');
-    zPoly(u,'#c8cbcf');zPoly([[214,112],[262,106],[270,124],[222,130]],'#3c4452');zPoly([[230,138],[278,132],[286,150],[238,156]],'#3c4452');
-    hx.strokeStyle='#a8acb2';hx.lineWidth=1.5;hx.beginPath();u.forEach((p,i)=>i?hx.lineTo(p[0],p[1]):hx.moveTo(p[0],p[1]));hx.closePath();hx.stroke();}
-  // red buildings: spillrom (back) and SFO (front, far left)
-  zGable(JB.spill,'#b8463a','#9c3a30','#8e939a','#a7acb2');
-  {const B=JB.spill,g=B.g;zWins(g[3],g[2],8,6,9,10,'#f4f1ea',.08,.92);const d=zLerp(g[3],g[2],.5);fRR(d[0]-6,d[1]-18,12,18,2,'#4a2a20');}
-  {const B=JB.annex,g=B.g,u=zRaise(g,B.h);zPoly([g[2],g[1],u[1],u[2]],'#9c3a30');zPoly([g[3],g[2],u[2],u[3]],'#b8463a');zPoly(u,'#a7acb2');zWins(g[3],g[2],6,2,8,8,'#f4f1ea');}
-  zTree(222,250,13);zTree(190,306,16);zTree(170,276,11);
-  zGable(JB.sfo,'#c04a3c','#a03e32','#8e939a','#a7acb2');
-  {const B=JB.sfo,g=B.g;zWins(g[3],g[2],8,6,9,10,'#f4f1ea',.08,.92);const d=zLerp(g[3],g[2],.5);fRR(d[0]-6,d[1]-18,12,18,2,'#4a2a20');}
-  // dark building (right)
-  zPoly([[412,400],[428,246],[440,238],[426,400]],'#3c4048');
-  zPoly([[440,234],[508,214],[582,228]],'#c86a3a');
-  zPoly([[440,236],[508,224],[498,400],[426,400]],'#5c6068');zPoly([[508,224],[582,230],[578,400],[498,400]],'#4a4e56');
-  hx.strokeStyle='rgba(255,255,255,.25)';hx.lineWidth=1.2;hx.beginPath();hx.moveTo(508,224);hx.lineTo(498,400);hx.stroke();
-  zTree(606,214,17);zTree(612,300,15);zTree(600,370,14);
-  // signs
-  zSign(PR().trinn+'. klasse','Tjen billetter',436,120);
-  zSign('Biblioteket','Gratis',300,150);
-  zSign('Spillrommet','1 🎟',230,196);
-  zSign('SFO','1 🎟',96,250);
-  zSign('Skolegården','1 🎟',300,350);
+  let g=hx.createLinearGradient(0,0,0,400);g.addColorStop(0,'#7da656');g.addColorStop(1,'#6a9a48');hx.fillStyle=g;hx.fillRect(0,0,640,400);
+  // gresskråningen bak skolen
+  zPoly([[60,96],[130,62],[210,26],[330,6],[400,12],[392,52],[350,74],[300,92],[262,108],[200,140],[150,160],[100,182],[98,120]],'#93a35c');
+  hx.fillStyle='rgba(120,100,50,.12)';for(let i=0;i<260;i++){const x=(i*73)%400,y=(i*37)%190;if(y<x*-.5+200&&y>-.35*x+100)hx.fillRect(x,y,3,1.2);}
+  // veier og gangvei
+  hx.lineCap='round';hx.lineJoin='round';
+  hx.strokeStyle='#b4b4ae';hx.lineWidth=8;hx.beginPath();hx.moveTo(-10,102);hx.quadraticCurveTo(90,76,170,36);hx.quadraticCurveTo(220,12,300,8);hx.lineTo(360,-4);hx.stroke();
+  hx.strokeStyle='#c9c6bc';hx.lineWidth=3.5;hx.beginPath();hx.moveTo(48,90);hx.quadraticCurveTo(96,96,98,130);hx.lineTo(96,182);hx.quadraticCurveTo(94,200,104,214);hx.stroke();
+  hx.strokeStyle='#a9acae';hx.lineWidth=12;hx.beginPath();hx.moveTo(650,214);hx.quadraticCurveTo(580,206,556,170);hx.quadraticCurveTo(536,130,520,96);hx.stroke();
+  // parkering
+  zPoly([[408,52],[470,28],[524,60],[520,100],[486,108]],'#9a9ea2');hx.strokeStyle='rgba(255,255,255,.55)';hx.lineWidth=1;
+  for(let i=0;i<6;i++){const a=zLerp([430,58],[496,40],i/5);hx.beginPath();hx.moveTo(a[0],a[1]);hx.lineTo(a[0]+8,a[1]+12);hx.stroke();}
+  zCar(442,62,'#c0262a');zCar(468,56,'#2a3a4a');zCar(484,76,'#e8e8e8');zCar(500,86,'#3a4a5a');
+  // gress nede til venstre med sandkasse
+  zPoly([[0,196],[60,206],[104,214],[104,252],[62,290],[0,336]],'#76a24e');
+  hx.fillStyle='#9a6a4a';hx.beginPath();hx.ellipse(10,272,18,10,-.2,0,6.283);hx.fill();hx.fillStyle='#b5845e';hx.beginPath();hx.ellipse(10,272,12,6,-.2,0,6.283);hx.fill();
+  // skolegården
+  zPoly(YARD,'#a3a6a8');hx.fillStyle='rgba(0,0,0,.045)';for(let i=0;i<700;i++){const x=(i*97)%420,y=130+(i*61)%270;if(inPoly(x,y,YARD))hx.fillRect(x,y,2,1.5);}
+  // trapp med sitteplasser
+  zPoly([[96,232],[124,222],[172,256],[150,268]],'#bcbab4');hx.strokeStyle='rgba(0,0,0,.18)';hx.lineWidth=1;for(let i=1;i<7;i++){const a=zLerp([96,232],[150,268],i/7),b=zLerp([124,222],[172,256],i/7);hx.beginPath();hx.moveTo(a[0],a[1]);hx.lineTo(b[0],b[1]);hx.stroke();}
+  // malte leker og klatrestativ midt i gården
+  const ring=(x,y,rx,ry,c,w)=>{hx.strokeStyle=c;hx.lineWidth=w;hx.beginPath();hx.ellipse(x,y,rx,ry,-.35,0,6.283);hx.stroke();};
+  ring(318,198,24,11,'rgba(90,150,220,.7)',2.2);ring(318,198,15,7,'rgba(240,200,60,.8)',2);
+  [['#e05a8a',290,214],['#5ab04a',298,211],['#4a8ae0',306,208],['#f0a030',314,205]].forEach(q=>{hx.fillStyle=q[0];hx.globalAlpha=.75;hx.fillRect(q[1]-4,q[2]+12,7,5);hx.globalAlpha=1;});
+  hx.strokeStyle='#c8402e';hx.lineWidth=2.4;hx.beginPath();hx.moveTo(312,204);hx.lineTo(318,188);hx.lineTo(326,202);hx.moveTo(318,188);hx.lineTo(330,186);hx.lineTo(334,200);hx.stroke();
+  // småmål og basketkurv
+  hx.strokeStyle='#fff';hx.lineWidth=2;hx.beginPath();hx.moveTo(146,276);hx.lineTo(147,266);hx.lineTo(166,262);hx.lineTo(166,272);hx.stroke();hx.strokeStyle='rgba(255,255,255,.45)';hx.lineWidth=.8;for(let i=1;i<5;i++){hx.beginPath();hx.moveTo(147+i*4,265-i*.8);hx.lineTo(147+i*4,274-i*.8);hx.stroke();}
+  hx.fillStyle='#5a5e66';hx.fillRect(58,300,2.5,24);fRR(52,292,15,10,2,'#fff');hx.strokeStyle='#ff7a20';hx.lineWidth=1.8;hx.beginPath();hx.ellipse(59,305,5,2,0,0,6.283);hx.stroke();
+  hx.strokeStyle='rgba(255,255,255,.6)';hx.lineWidth=1.4;hx.beginPath();hx.ellipse(70,330,30,12,-.5,Math.PI*1.05,Math.PI*1.95);hx.stroke();
+  // rekkehus og hus til venstre
+  zPoly([[0,114],[36,110],[50,192],[0,200]],'#c8643c');hx.strokeStyle='rgba(0,0,0,.18)';hx.lineWidth=1;for(let y=122;y<196;y+=10){hx.beginPath();hx.moveTo(0,y);hx.lineTo(40+(y-114)*.12,y-3);hx.stroke();}
+  zPoly([[0,200],[50,192],[52,202],[0,210]],'#ece4d8');zPoly([[30,104],[48,100],[52,112],[34,116]],'#d06a40');
+  zPoly([[0,58],[22,52],[26,74],[0,80]],'#d0683e');zPoly([[0,80],[26,74],[26,84],[0,90]],'#f0ece4');zPoly([[30,36],[52,30],[56,48],[34,54]],'#c8603a');
+  // skygger, så bygg og trær sortert bakfra og framover
+  for(const k in JB)zShadow(JB[k]);
+  const T2=[[40,40,12],[62,22,10],[92,30,11],[140,12,10],[300,22,10],[330,8,9],[358,26,10],[396,56,9],[418,72,8],[470,22,9],[500,44,10],[528,14,12],
+    [560,112,12],[576,140,13],[594,168,11],[614,186,10],[626,150,11],[540,200,10],
+    [95,206,10],[118,214,8],[170,214,10],[190,224,9],[232,198,8],[250,192,8],[298,222,6],
+    [396,170,15],[420,192,17],[406,220,15],[442,176,14],[460,206,16],[484,190,13],[432,244,17],[472,240,15],[506,214,14],[524,252,15],[500,284,16],[462,292,18],[424,284,16],[448,262,13],[488,262,12],
+    [442,322,15],[482,322,14],[520,322,13],[502,362,15],[452,362,14],[420,392,16],[482,396,15],[532,378,12],
+    [150,346,14],[176,330,12],[202,362,15],[166,388,16],[232,388,14],[256,362,11],[120,382,14],[10,384,16],[40,398,14],[330,320,10],[352,350,11],[330,392,12]];
+  const L=[];for(const k in JB){const B=JB[k];L.push({y:Math.max(...zGround(B).map(p=>p[1])),f:()=>zBlock(B)});}
+  for(const t of T2)L.push({y:t[1]+t[2]*.4,f:()=>zTree(t[0],t[1],t[2])});
+  L.sort((a,b)=>a.y-b.y).forEach(o=>o.f());
+  // skilt
+  for(const q of HSIGN)if(q.to){hx.strokeStyle='rgba(255,250,240,.95)';hx.lineWidth=2.2;hx.beginPath();hx.moveTo(q.x,q.to[1]<q.y?q.y-12:q.y+30);hx.lineTo(q.to[0],q.to[1]);hx.stroke();circ(q.to[0],q.to[1],3.6,'#fffaf0');circ(q.to[0],q.to[1],2,'#3a2a1a');}
+  zSign(PR().trinn+'. klasse','Tjen billetter',432,104);
+  zSign('Biblioteket','Gratis',268,66);
+  zSign('Spillrommet','1 🎟',262,224);
+  zSign('SFO','1 🎟',136,168);
+  zSign('Skolegården','1 🎟',110,300);
   txo('Jong skole',20,36,22,'#fff','left',true);}
-const HKIDS=[{x:380,y:300,c:'#e05a3a',v:18},{x:450,y:200,c:'#3a7ad8',v:-14},{x:290,y:270,c:'#f0c030',v:12}];
+const HKIDS=[{x:300,y:176,c:'#e05a3a',v:14,x0:290,x1:392,s:-.12},{x:120,y:312,c:'#3a7ad8',v:-16,x0:40,x1:190,s:-.55},{x:150,y:285,c:'#f0c030',v:12,x0:110,x1:240,s:-.55},{x:360,y:160,c:'#5ab04a',v:-10,x0:300,x1:395,s:-.12}];
 let hubT=null;
 function hubDraw(){zCached('hub-'+PR().trinn,hubStatic);const hd=hubT==null?0:Math.min(.05,Math.max(0,T-hubT));hubT=T;
-  for(const k of HKIDS){k.x+=k.v*hd;if(k.x<260||k.x>520)k.v=-k.v;const y=k.y+(k.x-380)*-.18;if(inPoly(k.x,y,YARD)){circ(k.x+1.5,y+2,4,'rgba(0,0,0,.25)');circ(k.x,y,4,k.c);circ(k.x,y-.5,2.2,'#f3c9a4');}}
-  emo('🐦',366,262+Math.sin(T*3)*1.5,15);
+  for(const k of HKIDS){k.x+=k.v*hd;if(k.x<k.x0){k.x=k.x0;k.v=Math.abs(k.v);}if(k.x>k.x1){k.x=k.x1;k.v=-Math.abs(k.v);}const y=k.y+(k.x-k.x0)*k.s;if(inPoly(k.x,y,YARD)){circ(k.x+1.5,y+2,4,'rgba(0,0,0,.25)');circ(k.x,y,4,k.c);circ(k.x,y-.5,2.2,'#f3c9a4');}}
+  emo('🐦',342,184+Math.sin(T*3)*1.5,13);
   zBtn(HUBB.album,'📒 Album','#6a4ab0',18);zBtn(HUBB.hjem,'🏠 Hjem','#2f7a8a',18);zBadge(212,36);}
 function goHub(){if(dlg){dq=[];dlg=null;$('dlg').hidden=true;}CL=null;setScene('hub','in');const p=PR();
   if(!p.seen.hub2){p.seen.hub2=1;saveDB();talk(null,'Velkommen til Jong skole! Trykk på klasserommet for å tjene billetter. To oppgaver riktig på første forsøk gir én billett. Spillrommet, SFO og skolegården koster én billett per spill. Biblioteket er gratis.');}}
 function hubTap(x,y){if(hit(HUBB.album,x,y)){SFX.door();zAlbum();return;}
   if(hit(HUBB.hjem,x,y)){ask(null,'Vil du gå hjem for i dag? Billettene dine blir liggende til neste gang.',['Ja, gå hjem','Nei, bli på skolen'],i=>{if(i===0){saveDB();CL=null;S.scene='start';updStatus();openStart();}});return;}
-  const b=HUBHIT.find(h=>inPoly(x,y,h.p));if(!b)return;SFX.door();
+  const HW={klasse:52,bibl:54,spill:60,sfo:30,gard:60};const sg=HSIGN.find(q=>Math.abs(x-q.x)<HW[q.id]&&y>q.y-14&&y<q.y+34);const b=sg||HUBHIT.find(h=>inPoly(x,y,h.p));if(!b)return;SFX.door();
   if(b.id==='klasse')startClass();else if(b.id==='bibl')zLibOpen();else if(b.id==='spill')zMenuSpill();else if(b.id==='sfo')zMenuSFO();else if(b.id==='gard')zMenuGard();}
 SC.hub=zScene({hd:hubDraw,tap(x,y){hubTap(x,y);return true;},hint(){say('Trykk på et bygg eller på skolegården. Du har '+PR().tickets+' billetter.');}});
 
