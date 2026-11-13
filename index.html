@@ -665,7 +665,7 @@ function ouch(){S.auT=1.4;SFX.ouch();speak('Au!');}
 function near(x,y,r){return Math.hypot(K.x-x,K.y-y)<(r||170);}
 const fmt=m=>String(Math.floor(m/60)).padStart(2,'0')+':'+String(m%60).padStart(2,'0');
 function updStatus(){updStatus0();zStatus();}
-function updStatus0(){$('sTitle').textContent=poss(CH.name)+' skolevei';$('sPts').textContent=S.mode==='class'?'Bonus: '+(S.bonus||0):'Poeng: '+Math.max(0,S.points)+' av 100'+(S.bonus?'  +'+S.bonus+' bonus':'');const cl=$('sClock');cl.textContent=fmt(S.clock);cl.classList.toggle('late',S.clock>BELL);$('where').textContent=PLACE[S.scene]||'';
+function updStatus0(){$('sTitle').textContent=poss(CH.name)+' skolevei';$('sPts').textContent=S.mode==='class'?'Bonus: '+(S.bonus||0):'Poeng: '+Math.max(0,S.points)+' av '+maxPts()+(S.bonus?'  +'+S.bonus+' bonus':'');const cl=$('sClock');cl.textContent=fmt(S.clock);cl.classList.toggle('late',S.clock>BELL);$('where').textContent=PLACE[S.scene]||'';
   for(const k of ITEMS)$('slot-'+k).classList.toggle('off',!S.has[k]);}
 function addMin(m){for(let i=0;i<m;i++){S.clock++;checkBell();}updStatus();}
 function checkBell(){if(!S.bell&&S.clock>=BELL){S.bell=true;SFX.bell();if(S.scene==='skole')say('Ring ring! Skoleklokka ringer!');else toast('Klokka er 08:15. Skolen har begynt!');}}
@@ -690,8 +690,8 @@ function updCars(dt){const sm=stopMode(),cfg=X.cfg;
   cfg.lanes.forEach((L,li)=>{X.spawnT[li]-=dt;const lc=X.cars.filter(c=>c.lane===li);
     if(X.spawnT[li]<=0&&lc.length<5){const ex=L.dir>0?-60:700;if(!lc.some(c=>Math.abs(c.x-ex)<80))X.cars.push({x:ex,lane:li,dir:L.dir,yb:L.yb,v:84+Math.random()*40,col:pick(CARCOL),wave:false});X.spawnT[li]=cfg.carRate?cfg.carRate[0]+Math.random()*cfg.carRate[1]:1.6+Math.random()*2.4;}
     const arr=lc.sort((a,b)=>L.dir>0?b.x-a.x:a.x-b.x);
-    arr.forEach((c,i)=>{if(L.dir>0){let lim=Infinity;if(i>0)lim=arr[i-1].x-64;if(sm&&c.x<=L.stop+.5)lim=Math.min(lim,L.stop);const k=isFinite(lim)?clamp((lim-c.x)/60,.12,1):1;c.x=Math.min(c.x+c.v*k*dt,Math.max(lim,c.x));}
-      else{let lim=-Infinity;if(i>0)lim=arr[i-1].x+64;if(sm&&c.x>=L.stop-.5)lim=Math.max(lim,L.stop);const k=isFinite(lim)?clamp((c.x-lim)/60,.12,1):1;c.x=Math.max(c.x-c.v*k*dt,Math.min(lim,c.x));}
+    arr.forEach((c,i)=>{if(L.dir>0){let lim=Infinity;if(i>0)lim=arr[i-1].x-64;if(X.bus&&li===0&&c.x<X.bus.x)lim=Math.min(lim,X.bus.x-60);if(sm&&!c.rude&&c.x<=L.stop+.5)lim=Math.min(lim,L.stop);const k=isFinite(lim)?clamp((lim-c.x)/60,.12,1):1;c.x=Math.min(c.x+c.v*k*dt*vF(),Math.max(lim,c.x));}
+      else{let lim=-Infinity;if(i>0)lim=arr[i-1].x+64;if(sm&&!c.rude&&c.x>=L.stop-.5)lim=Math.max(lim,L.stop);const k=isFinite(lim)?clamp((c.x-lim)/60,.12,1):1;c.x=Math.max(c.x-c.v*k*dt*vF(),Math.min(lim,c.x));}
       if(!sm)c.wave=false;});});
   X.cars=X.cars.filter(c=>c.x>-80&&c.x<720);}
 function spawnBike(li,x){const L=X.cfg.bikeLanes[li];X.bikes.push({x:x!=null?x:(L.dir>0?-40:680),lane:li,v:100+Math.random()*30,rang:false,type:Math.random()<.3?'scooter':'bike',o:pick(RIDERS)});}
@@ -713,34 +713,36 @@ function oopsBike(){S.roadMistake=true;X.here=true;X.bikeHold=1.6;SFX.bike();SFX
   setTimeout(()=>talk('politi','Stopp! Bilen har stoppet, men syklisten stopper ikke. Se etter sykler også, og vent til syklisten har kjørt forbi!',()=>{K.path=[];K.x=X.cfg.curbX;K.y=X.cfg.curbY;}),450);}
 function tapX(x,y){const cfg=X.cfg;
   if(X.side==='top'){
-    if(y<cfg.roadTop){if(['waiting','stopping','go','bikewait'].includes(X.st)){if(Math.abs(x-cfg.curbX)<30)return true;X.st='idle';}const p=clampR(cfg.TOP,x,y);walkTo(p.x,p.y,xArrive);return true;}
+    if(y<cfg.roadTop){if(['waiting','stopping','go','bikewait','bus'].includes(X.st)){if(Math.abs(x-cfg.curbX)<30)return true;X.st='idle';}const p=clampR(cfg.TOP,x,y);walkTo(p.x,p.y,xArrive);return true;}
     if(X.st==='go'){crossX(x,y);return true;}
     if(X.st==='bikewait'){oopsBike();return true;}
+    if(X.st==='bus'){oopsBus();return true;}
     if(['waiting','stopping','nogo'].includes(X.st)){oopsCar();return true;}
     walkTo(cfg.curbX,cfg.curbY,xArrive);return true;}
   if(y>=cfg.roadBot){const p=clampR(cfg.BOT,x,y);walkTo(p.x,p.y);return true;}
   talk('politi','Skolen er den andre veien, Kristoffer! Gå videre langs fortauet.');return true;}
-function updX(dt){updCars(dt);updBikes(dt);if(X.hold>0)X.hold-=dt;if(X.bikeHold>0)X.bikeHold-=dt;const cfg=X.cfg;
+function updX(dt){if(X.bus)busTick(dt);updCars(dt);updBikes(dt);if(X.hold>0)X.hold-=dt;if(X.bikeHold>0)X.bikeHold-=dt;const cfg=X.cfg;
   if(X.st==='waiting'){X.w+=dt;
     if(X.phase===0&&X.w>.9){X.phase=1;K.dir=-1;say('Se til venstre.');}
     if(X.phase===1&&X.w>2.4){X.phase=2;K.dir=1;say('Se til høyre.');}
     if(X.phase===2&&X.w>3.9){X.phase=3;K.dir=-1;if(cfg.id==='kiwi'&&!X.here)award('kstop');
-      if(S.has.vest){X.st='stopping';X.w2=0;say('Bilene ser refleksvesten din. Vent til bilen stopper.');}
+      if(busStand()){X.st='bus';X.bus.t=0;say('Bussen står rett ved fotgjengerfeltet. Bak bussen kan det komme biler som du ikke ser, og sjåførene ser ikke deg. Vent til bussen har kjørt.');}
+      else if(S.has.vest||(TRIP&&!TRIP.dark)){X.st='stopping';X.w2=0;if(TRIP&&TRIP.rude[cfg.id]&&!X.rudeDone){X.rudeDone=true;pickRude();}say(S.has.vest?(TRIP&&!TRIP.dark?'Det er lyst, og sjåførene ser deg godt. Vent til bilen stopper.':'Bilene ser refleksvesten din. Vent til bilen stopper.'):'Det er lyst, så sjåførene ser deg. Men når det er mørkt, må du ha refleks! Vent til bilen stopper.');}
       else{X.st='nogo';X.w=0;say('Hmm... bilene kjører bare forbi.');}}}
-  else if(X.st==='stopping'){X.w2+=dt;const st=X.cars.filter(c=>Math.abs(c.x-cfg.lanes[c.lane].stop)<1.5);
+  else if(X.st==='stopping'){X.w2+=dt;if(rudeTick())return;const st=X.cars.filter(c=>Math.abs(c.x-cfg.lanes[c.lane].stop)<1.5);
     if((X.w2>.3&&st.length)||X.w2>2.5){st.forEach(c=>c.wave=true);
       if(cfg.id==='solhaug'){X.st='bikewait';if(!X.bikes.some(b=>cfg.bikeLanes[b.lane].dir>0&&bikeDz(b)>0))spawnBike(0,120);say('Bilen har stoppet. Men vent! Det kommer en syklist. Vent til den har kjørt forbi.');}
       else{X.st='go';award('kwait');say(st.length?'Bilen har stoppet og sjåføren vinker til deg. Nå kan du gå over!':'Ingen biler kommer. Nå kan du gå over!');}}}
   else if(X.st==='bikewait'){if(!bikeDanger()){X.st='go';say('Syklisten har kjørt forbi. Nå er det trygt. Gå over!');}}
   else if(X.st==='nogo'){X.w+=dt;if(X.w>2.6){X.st='idle';S.vestHint=true;talk('politi','Vent litt, Kristoffer! Bilene ser deg ikke. Det er mørkt om morgenen, og uten refleksvest er du nesten usynlig. Gå hjem og hent refleksvesten din!');}}
   else if(X.st==='crossing'&&K.y>=cfg.landY-2){X.side='bottom';X.st='crossed';X.hold=1.6;if(cfg.id==='solhaug'&&!X.here)award('solhaug');say('Bra! Du kom trygt over.');}}
-function xSprites(){const L=[];for(const c of X.cars)L.push({y:c.yb,d:()=>drawCar(g,c.x,c.yb,c.dir,c.col,c.wave)});
+function xSprites(){const L=[];if(X.bus)L.push({y:X.cfg.lanes[0].yb+.5,d:()=>drawBus(g,X.bus.x,X.cfg.lanes[0].yb)});for(const c of X.cars)L.push({y:c.yb,d:()=>drawCar(g,c.x,c.yb,c.dir,c.col,c.wave)});
   for(const b of X.bikes){const dir=X.cfg.bikeLanes[b.lane].dir;const yy=X.cfg.bikeLanes[b.lane].y;L.push({y:yy,d:()=>b.type==='bike'?drawCyclist(g,b.x,yy,dir,b.o,T):drawScooter(g,b.x,yy,dir,b.o)});}
   L.push({y:X.cfg.police[1],d:()=>drawPolice(g,X.cfg.police[0],X.cfg.police[1],-1)});return L;}
 function xTop(){const cfg=X.cfg;
-  for(const car of X.cars){g.fillStyle='rgba(255,255,170,.2)';g.beginPath();const fx=car.dir>0?car.x+52:car.x,yy=car.yb-14;g.moveTo(fx,yy);g.lineTo(fx+car.dir*90,yy-16);g.lineTo(fx+car.dir*90,yy+14);g.closePath();g.fill();}
+  for(const car of X.cars){if(X.bus&&car.lane===0&&car.x<X.bus.x)continue;g.fillStyle='rgba(255,255,170,.2)';g.beginPath();const fx=car.dir>0?car.x+52:car.x,yy=car.yb-14;g.moveTo(fx,yy);g.lineTo(fx+car.dir*90,yy-16);g.lineTo(fx+car.dir*90,yy+14);g.closePath();g.fill();}
   if(S.has.vest){drawKid(g,K.x,K.y,K.dir,stepF(),true);const near=X.cars.some(cr=>Math.abs((cr.dir>0?cr.x+52:cr.x)-K.x)<110);if(near&&(T*5|0)%2){R(g,K.x-12,K.y-26,2,6,C.wht);R(g,K.x-14,K.y-24,6,2,C.wht);R(g,K.x+10,K.y-20,2,6,C.yel);R(g,K.x+8,K.y-18,6,2,C.yel);}}
-  if(X.side==='top'&&['waiting','stopping','bikewait'].includes(X.st)){const bx=Math.round(K.x)-14,by=Math.round(K.y)-74;R(g,bx,by,30,16,'#111');R(g,bx+2,by+2,26,12,C.wht);const o=K.dir>0?2:-2;R(g,bx+8+o,by+5,4,5,'#111');R(g,bx+18+o,by+5,4,5,'#111');
+  if(X.side==='top'&&['waiting','stopping','bikewait','bus'].includes(X.st)){const bx=Math.round(K.x)-14,by=Math.round(K.y)-74;R(g,bx,by,30,16,'#111');R(g,bx+2,by+2,26,12,C.wht);const o=K.dir>0?2:-2;R(g,bx+8+o,by+5,4,5,'#111');R(g,bx+18+o,by+5,4,5,'#111');
     const n=X.st==='waiting'?Math.min(3,Math.floor(X.w/1.3)):3;for(let i=0;i<3;i++)R(g,bx+6+i*8,by+20,4,4,i<n?'#40ff40':'#444');}
   if(X.st==='go')arrow(g,cfg.curbX,cfg.roadBot-12,'down','#40ff40');
   if(X.side==='top'&&X.st==='idle')arrow(g,cfg.curbX,188,'down');
@@ -1042,7 +1044,8 @@ function gen(subj,L){if(L>=10)return genTop(subj,L).slice(0,5);if(L>=8)return ge
 /* flow */
 let CL=null;
 function startClass(){setScene('klasse','in');CL={stage:'choose',subj:null,lvl:0,tasks:[],i:0,tries:0,firstOk:0,modBonus:0,flash:null,wait:0,after:null};
-  talk('laerer','Velkommen til timen! Trykk på norsk, engelsk, matte eller tenk på tavla. Nye stjerner gir friminuttbilletter. Oppgaver du strever med, kommer tilbake senere, så du lærer dem skikkelig.');}
+  talk('laerer','Velkommen til timen! Trykk på norsk, engelsk, matte eller tenk på tavla. Nye stjerner gir friminuttbilletter. Oppgaver du strever med, kommer tilbake senere, så du lærer dem skikkelig.');
+  if(DB){const T=turnState();if(!T.intro){T.intro=true;saveDB();talk('laerer','Denne uka har vi sjakkturnering i klassen! Hver gang du har gjort to moduler, kan du spille en ny runde. Trykk på sjakk-knappen nederst på tavla.');}}}
 function openGrid(subj){CL.subj=subj;CL.stage='grid';CL.page=Math.max(0,Math.min(1,Math.floor((PROG[subj].open-1)/10)));const P=PROG[subj];if(subj==='tenk'){CL.page=0;say('Tenk! Her er mønstre, logikk, regnestykker med mange svar og sjakkoppgaver. Velg en.');return;}say('Du valgte '+subj+'. Velg en modul. Du har låst opp '+P.open+(P.open===1?' modul.':' moduler.'));}
 function startModule(L){CL.lvl=L;CL.practice=false;CL.saidAgain=false;CL.tasks=gen2(CL.subj,L);CL.tasks.forEach(t=>t.core=true);
   const due=dueReps(CL.subj).slice(0,2);const R=due.map(it=>{const t=taskFromSnap(it.snap);t.repId=it.id;t.repKey=it.key;t.lvl0=it.lvl;return t;});CL.tasks=R.concat(CL.tasks);
@@ -1062,14 +1065,16 @@ function nextTask(){CL.i++;if(CL.i<CL.tasks.length){const nt=CL.tasks[CL.i];if(n
   if(CL.subj==='tenk'){}else if(CL.firstOk>=core-1&&CL.lvl<LVL.length-1&&P.open<=CL.lvl+1){P.open=CL.lvl+2;msg+=' Du har låst opp modul '+LVL[CL.lvl+1]+'!';SFX.fanfare();}
   else if(CL.firstOk<core-1&&CL.lvl<LVL.length-1&&P.open<=CL.lvl+1)msg+=' Får du fire riktige, låser du opp neste modul.';
   if(CL.subj!=='tenk'&&CL.lvl%2===1&&CL.firstOk>=core-1)msg+=' Du har klart '+['første','andre','tredje','fjerde','femte','sjette','sjuende','åttende','niende','tiende'][CL.lvl>>1]+' klasse'+(CL.lvl===LVL.length-1?', hele grunnskolen! Helt rått!':'!');
-  S.mods.push({subj:CL.subj,lvl:CL.lvl,ok:CL.firstOk,b:CL.modBonus});saveProg();zModuleDone();ask('laerer',msg+' Vil du ta en modul til?',['Ja, en til!','Til skolekartet','Ferdig for i dag'],i=>{if(i===0){CL.stage='choose';say('Velg fag.');}else if(i===1)goHub();else showDiploma();});}
-function answer(ok,idx){const t=CL.tasks[CL.i];CL.flash={ok,pick:idx,t:.9};
+  S.mods.push({subj:CL.subj,lvl:CL.lvl,ok:CL.firstOk,b:CL.modBonus});saveProg();zModuleDone();msg+=turnMod();if(st>=2)malReact(true,st===3);ask('laerer',msg+' Vil du ta en modul til?',['Ja, en til!','Til skolekartet','Ferdig for i dag'],i=>{if(i===0){CL.stage='choose';say('Velg fag.');}else if(i===1)goHub();else showDiploma();});}
+function answer(ok,idx){const t=CL.tasks[CL.i];CL.flash={ok,pick:idx,t:.9};malReact(ok);
   if(ok){const first=CL.tries===0&&!(t.errs>0);if(first&&t.core)CL.firstOk++;bonus(ptsFor(first));const rm=taskDone(t,first);
     const pr=(first?(t.repId?pick(['Den husket du!','Riktig, du husket den!']):t.again?pick(['Nå fikk du den til!','Du lærte av feilen!']):pick(['Riktig!','Kjempebra!','Helt riktig!','Flott!'])):pick(['Bra at du prøvde igjen!','Riktig på andre forsøk!']))+(rm?' '+rm:'');
     if(t.enOk)speakNoEn(pr,t.enOk);else say(pr);CL.wait=rm?3:1.4;CL.after=nextTask;}
   else{CL.tries++;SFX.brake();if(t.kind==='num'||t.kind==='skriv'){t.wrongShown=t.inp;t.inp='';}if(CL.tries>=2){taskDone(t,false);if(t.kind==='num')t.inp=t.reveal;revealTask(t);if(t.en||t.enOk)speakNoEn('Nesten! Riktig svar var',t.enOk||t.en);else say('Nesten! Riktig svar var '+String(t.reveal).toLowerCase()+'.');CL.flash={ok:true,pick:t.ans,t:2};CL.wait=2.4;CL.after=nextTask;}else say('Nesten! Prøv igjen.');}}
 function classTap(x,y){if(!CL||CL.wait>0||CL.stage==='done')return;
   if(CL.stage==='mestring'){mestrTap(x,y);return;}
+  if(CL.stage==='race'){raceTap(x,y);return;}if(CL.stage==='turn'){turnTap(x,y);return;}
+  if(CL.stage==='choose'&&f3ChooseTap(x,y))return;
   if(CL.stage==='choose'&&hit(MESTR,x,y)){SFX.chime();CL.stage='mestring';say('Mestringskartet for gangetabellen. Grønne ruter sitter.');return;}
   if(CL.stage==='choose'&&hit(HUBR,x,y)){SFX.door();goHub();return;}
   if(CL.stage==='choose'){const subs=['norsk','engelsk','matte','tenk'];for(let i=0;i<4;i++){if(hit(CHOOSE[i],x,y)){SFX.chime();openGrid(subs[i]);return;}}return;}
@@ -1084,7 +1089,7 @@ function classTap(x,y){if(!CL||CL.wait>0||CL.stage==='done')return;
   if(t.kind==='stav'){const rs=tileRects(t);for(let i=0;i<rs.length;i++){if(hit(rs[i],x,y)&&!t.tiles[i].used){const need=t.letters[t.filled];
       if(t.tiles[i].ch===need){t.tiles[i].used=true;t.filled++;SFX.count();speak(t.tiles[i].ch,'laerer');if(t.filled===t.letters.length){CL.wait=.5;CL.after=()=>{answer(true,-1);say(t.letters.toLowerCase()+'! Riktig!');};}}
       else{t.errs++;CL.flash={ok:false,pick:i,t:.6};SFX.brake();say('Nei, ikke '+t.tiles[i].ch+'. Hvilken bokstav kommer nå?');}return;}}}}
-function updClass(dt){if(BUB.t>0)BUB.t-=dt;if(!CL)return;{const ct=CL.stage==='task'&&CL.tasks[CL.i];if(ct&&ct.kind==='opp')oppUpdate(ct,dt);}if(CL.flash){CL.flash.t-=dt;if(CL.flash.t<=0)CL.flash=null;}if(CL.wait>0){CL.wait-=dt;if(CL.wait<=0&&CL.after){const f=CL.after;CL.after=null;f();}}}
+function updClass(dt){if(BUB.t>0)BUB.t-=dt;if(!CL)return;f3Upd(dt);{const ct=CL.stage==='task'&&CL.tasks[CL.i];if(ct&&ct.kind==='opp')oppUpdate(ct,dt);}if(CL.flash){CL.flash.t-=dt;if(CL.flash.t<=0)CL.flash=null;}if(CL.wait>0){CL.wait-=dt;if(CL.wait<=0&&CL.after){const f=CL.after;CL.after=null;f();}}}
 function bgKlasse(){}
 /* ---------- HD classroom renderer (logical 640x400, drawn at device resolution) ---------- */
 const hc=$('hc');let hx=hc.getContext('2d');
@@ -1117,11 +1122,11 @@ function hdKids(){
   const kids=[[232,'#3a2010','#2a9a6a','#f1c9a5'],[304,'#e8c873','#e07030','#f6d3b3'],[458,'#151515','#8a4ad0','#a8724a'],[532,'#c8803a','#3a7ad8','#f1c9a5']];
   const kid=(x,hair,top,skin,long,me)=>{fRR(x-21,316,42,46,15,top);hx.fillStyle=shade(top,.8);hx.fillRect(x-1,320,2,38);
     circ(x-15,302,4,skin);circ(x+15,302,4,skin);circ(x,300,15,hair);if(long){fRR(x-15,298,30,26,8,hair);}hx.globalAlpha=.25;circ(x-5,293,6,'#ffffff');hx.globalAlpha=1;};
-  kids.forEach(k=>kid(k[1]&&k[0],k[1],k[2],k[3],false));
+  kids.forEach((k,i)=>{kid(k[1]&&k[0],k[1],k[2],k[3],false);kidArm(i,k[0],k[3],k[2]);});
   kid(381,CH.hair,S.has&&S.has.jakke===false&&S.mode!=='class'?'#2e8a5a':CH.jacket,CH.skin,CH.long,true);
   let gr=hx.createLinearGradient(0,350,0,368);gr.addColorStop(0,'#b07a45');gr.addColorStop(1,'#83552c');fRR(160,350,452,16,4,gr);hx.fillStyle='#6a4020';hx.fillRect(172,366,8,34);hx.fillRect(592,366,8,34);
-  const nmW=fitS(CH.name,90,11,true);fRR(381-48,352,96,12,3,'#fffdf4');chalk(CH.name,381,358.5,nmW,'#2a2a2a','center',true);}
-function hdMalin(talk){const x=78,f=348;
+  kidTags();const nmW=fitS(CH.name,90,11,true);fRR(381-48,352,96,12,3,'#fffdf4');chalk(CH.name,381,358.5,nmW,'#2a2a2a','center',true);}
+function hdMalin(talk){const x=MAL.x,f=348-MAL.bob;
   hx.fillStyle='#6e4422';hx.beginPath();hx.ellipse(x,f-118,20,24,0,0,6.283);hx.fill();hx.beginPath();hx.ellipse(x-20,f-100,7,16,.3,0,6.283);hx.fill();
   fRR(x-11,f-48,9,46,4,'#2b2b44');fRR(x+2,f-48,9,46,4,'#2b2b44');hx.fillStyle='#3a2416';hx.beginPath();hx.ellipse(x-6,f-2,8,4,0,0,6.283);hx.fill();hx.beginPath();hx.ellipse(x+8,f-2,8,4,0,0,6.283);hx.fill();
   hx.fillStyle='#c0392b';hx.beginPath();hx.moveTo(x-15,f-100);hx.lineTo(x+15,f-100);hx.lineTo(x+22,f-44);hx.lineTo(x-22,f-44);hx.closePath();hx.fill();hx.fillStyle='#a8301f';hx.fillRect(x-15,f-72,30,4);
@@ -1140,9 +1145,9 @@ function hdBubble(){if(BUB.t<=0||!BUB.text)return;const x=8,w=142,size=14;const 
   setF(size);hx.textAlign='left';hx.textBaseline='middle';hx.fillStyle='#222';lines.forEach((l,i)=>hx.fillText(l,x+9,y+16+i*18));
   setF(9,true);hx.fillStyle='#c0392b';hx.fillText('MALIN',x+9,y+5.5);}
 function drawHD(){const k=hc.width/640;hx.setTransform(k,0,0,k,0,0);hx.clearRect(0,0,640,400);hdRoom();hdBoard();hdKids();oppDraw();
-  const talking=('speechSynthesis' in window)&&speechSynthesis.speaking&&BUB.t>0;hdMalin(talking);hdBubble();}
+  const talking=('speechSynthesis' in window)&&speechSynthesis.speaking&&BUB.t>0;hdMalin(talking);malMood();hdBubble();}
 /* board geometry shared by drawing and tapping */
-const CHOOSE=[0,1,2,3].map(i=>({x:BC-(4*100+3*10)/2+i*110,y:62,w:100,h:166}));
+const CHOOSE=[0,1,2,3].map(i=>({x:BC-(4*100+3*10)/2+i*110,y:62,w:100,h:148}));
 const GRIDR=[0,1,2,3,4,5,6,7,8,9].map(i=>({x:BC-(5*80+4*8)/2+(i%5)*88,y:64+Math.floor(i/5)*84,w:80,h:74}));
 const BACKR={x:BX+BW-112,y:BY+BH-30,w:100,h:22};
 const PAGER={x:BX+12,y:BY+BH-30,w:150,h:22};
@@ -1153,14 +1158,15 @@ function star(cx,cy,r,on){hx.beginPath();for(let i=0;i<10;i++){const a=-Math.PI/
 function card(r,state){const bg=state==='ok'?'#2f8a4a':state==='bad'?'#a83030':'rgba(255,255,255,.07)';fRR(r.x,r.y,r.w,r.h,8,bg);sRR(r.x+1,r.y+1,r.w-2,r.h-2,8,state==='ok'?'#a8ffb8':state==='bad'?'#ffb0b0':'rgba(240,248,240,.85)',1.6);}
 function hdBoard(){if(!CL)return;
   if(CL.stage==='mestring'){hdMestring();return;}
+  if(CL.stage==='race'){raceDraw();return;}if(CL.stage==='turn'){turnDraw();return;}
   if(CL.stage==='choose'){chalk('Velg fag',BC,42,20,'#f5f9f3','center',true);zBoardHub();
     [['Norsk','book','norsk','ABC'],['Engelsk','flag','engelsk','Hello'],['Matte','math','matte','1 + 2 = 3'],['Tenk','tenk','tenk','Sjakk og logikk']].forEach((s,i)=>{const r=CHOOSE[i];card(r);
       if(s[1]==='tenk'){sjPiece('N',r.x+r.w/2,r.y+46,50);}
       if(s[1]==='book')emo('book',r.x+r.w/2,r.y+48,52);
       if(s[1]==='flag'){const fx=r.x+r.w/2-36,fy=r.y+24;hx.save();rr(fx,fy,72,44,4);hx.clip();hx.fillStyle='#1d3c8f';hx.fillRect(fx,fy,72,44);hx.strokeStyle='#fff';hx.lineWidth=9;hx.beginPath();hx.moveTo(fx,fy);hx.lineTo(fx+72,fy+44);hx.moveTo(fx+72,fy);hx.lineTo(fx,fy+44);hx.stroke();hx.strokeStyle='#d0262c';hx.lineWidth=3;hx.stroke();hx.fillStyle='#fff';hx.fillRect(fx+29,fy,14,44);hx.fillRect(fx,fy+15,72,14);hx.fillStyle='#d0262c';hx.fillRect(fx+32,fy,8,44);hx.fillRect(fx,fy+18,72,8);hx.restore();}
       if(s[1]==='math')chalk('1+2',r.x+r.w/2,r.y+48,34,'#ffffff','center',true);
-      chalk(s[3],r.x+r.w/2,r.y+94,fitS(s[3],r.w-10,15),'#ffe36a');chalk(s[0],r.x+r.w/2,r.y+124,22,'#f5f9f3','center',true);
-      chalk(s[2]==='tenk'?'6 oppgavetyper':'Modul '+LVL[Math.min(openN(s[2]),LVL.length)-1]+(CHEAT?' (juks)':''),r.x+r.w/2,r.y+150,11,'#a8d8b8');const dn=dueReps(s[2]).length;if(dn){fRR(r.x+r.w-50,r.y+6,44,20,10,'#ffe36a');chalk('🔁 '+dn,r.x+r.w-28,r.y+16.5,12,'#3a2a08','center',true);}});}
+      chalk(s[3],r.x+r.w/2,r.y+86,fitS(s[3],r.w-10,15),'#ffe36a');chalk(s[0],r.x+r.w/2,r.y+112,22,'#f5f9f3','center',true);
+      chalk(s[2]==='tenk'?'6 oppgavetyper':'Modul '+LVL[Math.min(openN(s[2]),LVL.length)-1]+(CHEAT?' (juks)':''),r.x+r.w/2,r.y+136,11,'#a8d8b8');const dn=dueReps(s[2]).length;if(dn){fRR(r.x+r.w-50,r.y+6,44,20,10,'#ffe36a');chalk('🔁 '+dn,r.x+r.w-28,r.y+16.5,12,'#3a2a08','center',true);}});f3ChooseDraw();}
   if(CL.stage==='grid'){const n=openN(CL.subj),P=PROG[CL.subj];chalk(SUBJ[CL.subj][0].toUpperCase()+SUBJ[CL.subj].slice(1)+': velg modul',BC,42,18,'#f5f9f3','center',true);
     if(CL.subj!=='tenk'){card(PAGER);chalk(CL.page?'◂ 1.–5. klasse':'6.–10. klasse ▸',PAGER.x+PAGER.w/2,PAGER.y+11,12,'#ffe36a','center',true);}
     GRIDR.forEach((r,j)=>{const i=j+(CL.page||0)*10;if(i>=LVLDESC[CL.subj].length)return;const open=i<n;fRR(r.x,r.y,r.w,r.h,8,open?'rgba(255,255,255,.08)':'rgba(0,0,0,.18)');sRR(r.x+1,r.y+1,r.w-2,r.h-2,8,open?'rgba(240,248,240,.85)':'rgba(255,255,255,.2)',1.5);
@@ -2686,7 +2692,7 @@ const SQ=44,SBX=20,SBY=22,SPX=392,SPW=232;
 const SJUNDO={x:SPX,y:342,w:112,h:42},SJGIVE={x:SPX+120,y:342,w:112,h:42};
 let SJ=null;
 const sjXY=sq=>({x:SBX+(sq&7)*SQ,y:SBY+(sq>>3)*SQ});
-function sjStart(id){const s=sjNew();SJ={id,o:SJO[id],s,sel:-1,moves:[],last:null,hist:[],keys:{},capW:[],capB:[],st:'play',bub:'',bubT:0,msg:'',msgT:0,hint:null,info:'Trykk på en hvit brikke for å se hvor den kan gå.',promo:null,aiT:0,endT:0,res:null};
+function sjStart(id,oo){const s=sjNew();SJ={id,o:oo||SJO[id],s,sel:-1,moves:[],last:null,hist:[],keys:{},capW:[],capB:[],st:'play',bub:'',bubT:0,msg:'',msgT:0,hint:null,info:'Trykk på en hvit brikke for å se hvor den kan gå.',promo:null,aiT:0,endT:0,res:null};
   SJ.keys[sjKey(s)]=1;SJ.moves=sjLegal(s,false);setScene('sjakk','in');
   setTimeout(()=>{if(SJ&&SJ.id===id&&!SJ.hist.length)sjBub(pick(SJ.o.hello));},900);}
 function sjBub(t){if(SJ){SJ.bub=t;SJ.bubT=4.5;}}
@@ -2705,7 +2711,7 @@ function sjDo(m){const P=SJ,s=P.s,mine=sjW(m.p);
   else if(m.c&&Math.random()<.6)sjBub(pick(mine?P.o.lost:P.o.cap));
   if(s.t==='b'){P.st='ai';P.aiT=.55;}else P.st='play';}
 function sjAI(){const P=SJ;if(!P||P.st!=='ai')return;const m=sjBest(P.s,P.o);if(m)sjDo(m);}
-function sjEnd(){const P=SJ,o=P.o,R=P.res;let t;
+function sjEnd(){const P=SJ,o=P.o,R=P.res;let t;if(P.turn){turnEnd(P);return;}
   if(R==='win'){zStk('sj_'+P.id);t='Sjakkmatt! Du vant mot '+o.n+'. '+o.lose;}
   else if(R==='loss')t='Sjakkmatt. '+o.short+' vant denne gangen. '+o.win;
   else if(R==='opp')t='Du ga opp. '+o.win;
@@ -2756,7 +2762,7 @@ function sjDraw(){const P=SJ;if(!P)return;zCached('sjakk',sjBg);const s=P.s,o=P.
 SC.sjakk=zScene({hd:sjDraw,update:sjUpdate,tap(x,y){sjTap(x,y);return true;},
   hint(){if(!SJ)return;ask(null,'Trykk på en av de hvite brikkene dine. Prikkene viser hvor den kan gå. Trykk på en prikk for å flytte. Målet er å sette kongen til motstanderen sjakkmatt: han står i sjakk og kan ikke komme seg unna.',['Vis et godt trekk','Spill videre','Avslutt partiet'],
     i=>{if(!SJ)return;if(i===0&&SJ.st==='play'){const m=sjBest(SJ.s,{d:2,q:true,noise:0});if(m){SJ.hint=m;SJ.sel=m.f;SJ.info='Tips: Prøv å flytte brikken på det grønne feltet til det andre grønne feltet.';}}
-      if(i===2){SJ=null;zSjMenu();}});}});
+      if(i===2){const tt=SJ.turn;SJ=null;if(tt)backToClass('turn');else zSjMenu();}});}});
 
 /* ---------- stigespill på SFO ---------- */
 const STL={4:14,9:31,20:38,28:84,40:59,51:67,63:81,71:91,17:7,54:34,62:19,87:57,93:73,95:75,99:78};
@@ -2883,22 +2889,22 @@ function buildSetup(){document.querySelectorAll('.sw').forEach(box=>{const k=box
 $('nmIn').addEventListener('input',()=>{CH.name=$('nmIn').value.trim();$('startTitle').textContent=poss(CH.name||'Min')+' Skolevei';saveDB();zProfUI();});
 function openStart(){flushTime();$('start').hidden=false;buildSetup();}
 $('bAgain').addEventListener('click',()=>{$('dip').hidden=true;if(DIPMODE==='route')startClass();else{CL=null;S.scene='start';updStatus();openStart();}});
-function begin(mode){fresh();CL=null;if(mode==='hub'){S.mode='class';ITEMS.forEach(k=>S.has[k]=true);S.clock=BELL-5;goHub();return;}if(mode==='class'){S.mode='class';ITEMS.forEach(k=>S.has[k]=true);S.clock=BELL-5;updStatus();startClass();return;}setScene('hjem','start');talk('pappa','God morgen, Kristoffer! Nå er det tid for å gå til Jong skole. Husk riktig rekkefølge: matboks og vannflaske oppi sekken, så jakke, så refleksvest, og sekken på ryggen til slutt. Og ikke glem lua!');}
+function begin(mode){fresh();CL=null;TRIP=null;if(mode==='hub'){S.mode='class';ITEMS.forEach(k=>S.has[k]=true);S.clock=BELL-5;goHub();return;}if(mode==='class'){S.mode='class';ITEMS.forEach(k=>S.has[k]=true);S.clock=BELL-5;updStatus();startClass();return;}TRIP=rollTrip();setScene('hjem','start');talk('pappa','God morgen, Kristoffer! Se ut av vinduet og sjekk været før du kler på deg. Nå er det tid for å gå til Jong skole. Husk riktig rekkefølge: matboks og vannflaske oppi sekken, så jakke, så refleksvest, og sekken på ryggen til slutt. Og ikke glem lua!');}
 
 /* ================= diploma ================= */
 function starSVG(on){return '<svg viewBox="0 0 16 16" shape-rendering="crispEdges"><path fill="'+(on?'#FFFF55':'#DDDDDD')+'" stroke="'+(on?'#AA5500':'#AAAAAA')+'" d="M8 1l2 5h5l-4 3 2 6-5-4-5 4 2-6-4-3h5z"/></svg>';}
 function fillList(items){$('dList').innerHTML=items.join('');}
-function routeItems(){return Object.keys(AW).map(k=>'<div class="'+(S.got[k]?'ok':'no')+'">'+(S.got[k]?'✓ ':'– ')+AW[k][1]+'</div>').concat(S.pen.map(q=>'<div class="pen">−'+q.pts+' '+q.label+'</div>'));}
-function showRoute(){SFX.fanfare();DIPMODE='route';const p=Math.max(0,S.points);const st=p>=90?3:p>=60?2:1;
+function routeItems(){return Object.keys(AW).filter(awActive).map(k=>'<div class="'+(S.got[k]?'ok':'no')+'">'+(S.got[k]?'✓ ':'– ')+AW[k][1]+'</div>').concat(S.pen.map(q=>'<div class="pen">−'+q.pts+' '+q.label+'</div>'));}
+function showRoute(){SFX.fanfare();DIPMODE='route';const p=Math.max(0,S.points),mp=maxPts();const st=p>=.9*mp?3:p>=.6*mp?2:1;
   $('dEyebrow').textContent='SKOLEVEIEN ER FERDIG';$('dTitle').textContent='TRAFIKKHELT';$('dipName').textContent=CH.name;
-  $('stars').innerHTML=[0,1,2].map(i=>starSVG(i<st)).join('');$('dScore').textContent=p+' av 100 poeng på skoleveien'+zRouteReward(st);fillList(routeItems());$('bAgain').textContent='GÅ INN I KLASSEROMMET';
+  $('stars').innerHTML=[0,1,2].map(i=>starSVG(i<st)).join('');$('dScore').textContent=p+' av '+mp+' poeng på skoleveien'+zRouteReward(st);fillList(routeItems());$('bAgain').textContent='GÅ INN I KLASSEROMMET';
   $('dip').hidden=false;speak('Du fikk '+p+' poeng og '+st+(st===1?' stjerne':' stjerner')+' på skoleveien. Nå skal vi inn i klasserommet!');}
 function showDiploma(){SFX.fanfare();DIPMODE='final';const p=Math.max(0,S.points),B=S.bonus||0;
   $('dEyebrow').textContent='DIPLOM';$('dTitle').textContent=S.mode==='class'?'SKOLEFLINK':'TRAFIKKHELT OG SKOLEFLINK';$('dipName').textContent=CH.name;
-  const st=S.mode==='class'?(B>=30?3:B>=12?2:1):(p>=90?3:p>=60?2:1);$('stars').innerHTML=[0,1,2].map(i=>starSVG(i<st)).join('');
-  $('dScore').textContent=(S.mode==='class'?'':p+' av 100 poeng på skoleveien + ')+B+' bonuspoeng i klasserommet';
+  const st=S.mode==='class'?(B>=30?3:B>=12?2:1):(p>=.9*maxPts()?3:p>=.6*maxPts()?2:1);$('stars').innerHTML=[0,1,2].map(i=>starSVG(i<st)).join('');
+  $('dScore').textContent=(S.mode==='class'?'':p+' av '+maxPts()+' poeng på skoleveien + ')+B+' bonuspoeng i klasserommet';
   const mods=S.mods.map(m=>'<div class="ok">★ '+SUBJ[m.subj][0].toUpperCase()+SUBJ[m.subj].slice(1)+' '+LVL[m.lvl]+': '+m.ok+' av 5 riktige, +'+m.b+'</div>');
-  fillList((S.mode==='class'?[]:['<div class="ok">Skoleveien: '+p+' av 100</div>']).concat(mods.length?mods:['<div class="no">Ingen moduler fullført</div>']));
+  fillList((S.mode==='class'?[]:['<div class="ok">Skoleveien: '+p+' av '+maxPts()+'</div>']).concat(mods.length?mods:['<div class="no">Ingen moduler fullført</div>']));
   $('bAgain').textContent='SPILL IGJEN';$('dip').hidden=false;speak('Gratulerer, '+CH.name+'! '+(S.mode==='class'?'':'Du fikk '+p+' poeng på skoleveien og ')+B+' bonuspoeng i klasserommet.');}
 
 /* ================= leaves ================= */
@@ -2926,6 +2932,7 @@ function update(dt){T+=dt;tickTime(dt);
       if(d<=sp){K.x=p.x;K.y=p.y;K.path.shift();if(!K.path.length&&K.cb){const cb=K.cb;K.cb=null;cb();}}
       else{K.x+=dx/d*sp;K.y+=dy/d*sp;K.moving=true;if(Math.abs(dx)>.5)K.dir=dx>0?1:-1;}}}
   if(SC[S.scene]===sc&&sc.update)sc.update(dt);
+  wetTick(dt);
 }
 function render(){
   if(S.scene==='start'){hc.hidden=true;g.drawImage(BG.ute,0,0);g.fillStyle='rgba(0,0,40,.4)';g.fillRect(0,0,W,H);return;}
@@ -2935,7 +2942,7 @@ function render(){
   if(sc.render)sc.render(g);
   else{g.drawImage(BG[S.scene],0,0);if(sc.dyn)sc.dyn(g);const L=sc.sprites?sc.sprites():[];if(!sc.noK)L.push({y:K.y,d:()=>drawKid(g,K.x,K.y,K.dir,stepF())});for(const p of PETS[S.scene]||[])L.push({y:p.y,d:()=>drawPet(g,p)});L.sort((a,b)=>a.y-b.y).forEach(o=>o.d());}
   if(sc.leaves)drawLeaves(g);
-  if(sc.dim){g.fillStyle='rgba(0,0,50,'+sc.dim+')';g.fillRect(0,0,W,H);}
+  {const dm=dimFor(sc);if(dm>0){g.fillStyle='rgba(0,0,50,'+dm+')';g.fillRect(0,0,W,H);}}weatherDraw(g);
   if(sc.top)sc.top(g);
   hc.hidden=!(S.scene==='klasse'||sc.hd);if(S.scene==='klasse')drawHD();else if(sc.hd){const k=hc.width/640;hx.setTransform(k,0,0,k,0,0);hx.clearRect(0,0,640,400);sc.hd();}
   if(S.anim&&S.anim.type==='pet'&&(T*3|0)%2){const hx=Math.round(K.x)+6,hy=Math.round(K.y)-66;R(g,hx,hy,4,4,'#ff4080');R(g,hx+6,hy,4,4,'#ff4080');R(g,hx,hy+4,10,4,'#ff4080');R(g,hx+2,hy+8,6,2,'#ff4080');R(g,hx+4,hy+10,2,2,'#ff4080');}
@@ -3379,6 +3386,230 @@ function revealTask(t){if(t.kind==='skriv')t.inp=t.reveal;if(t.kind==='bygg')byg
 function gen2(subj,L){if(subj==='tenk')return genTenk(L);let T=gen(subj,L);
   if(subj==='matte')return mathExtras(L,T);
   const P=prodTasks(subj,L);return T.slice(0,5-P.length).concat(P);}
+
+/* ================= FASE 3: variasjon på skoleveien, ukens sjakkturnering, Malin og klassen i live ================= */
+/* ---------- S1: hver tur trekkes vær, lys, buss, gravemaskin og biler som ikke stopper ---------- */
+let TRIP=null;
+const WEATHERS=['skyet','regn','sno','klart'];
+const WNAME={skyet:'overskyet',regn:'regn',sno:'snø',klart:'klart'};
+function tripSig(t){return [t.w,t.dark?1:0,t.bus?1:0,t.grav?1:0,t.rude.kiwi?1:0,t.rude.solhaug?1:0].join('');}
+function rollTrip(){const p=DB?PR():null;const last=p&&p.lastTrip;let t;
+  for(let n=0;n<40;n++){t={w:pick(WEATHERS),dark:Math.random()<.6,bus:Math.random()<.45,grav:Math.random()<.45,rude:{kiwi:Math.random()<.35,solhaug:Math.random()<.3}};
+    const ev=(t.bus?1:0)+(t.grav?1:0)+(t.rude.kiwi?1:0)+(t.rude.solhaug?1:0);if(ev<1||ev>3)continue;if(last&&tripSig(t)===last)continue;break;}
+  if(p){p.lastTrip=tripSig(t);p.trips=(p.trips||0)+1;saveDB();}return t;}
+const OUTDOOR=['ute','kiwi','sykkel','skru','solhaug','hester','skole'];
+function vF(){return TRIP&&TRIP.w==='sno'?.72:1;}
+Object.assign(AW,{buss:[6,'Ventet til bussen hadde kjørt'],rude:[8,'Ventet da en bil ikke stoppet'],grav:[6,'Gikk trygt rundt gravemaskinen']});
+const AWX=['buss','rude','grav'];
+function awActive(id){if(!AWX.includes(id))return true;if(!TRIP)return false;if(id==='buss')return TRIP.bus;if(id==='grav')return TRIP.grav;return TRIP.rude.kiwi||TRIP.rude.solhaug;}
+function maxPts(){return Object.keys(AW).filter(awActive).reduce((s,k)=>s+AW[k][0],0);}
+function dimFor(sc){let d=sc.dim||0;if(TRIP&&OUTDOOR.includes(S.scene))d=TRIP.dark?d+.2:d*.3;return d;}
+let WP=null;
+function weatherDraw(c){if(!TRIP||!OUTDOOR.includes(S.scene))return;const w=TRIP.w;
+  if(w==='regn'){c.fillStyle='rgba(30,40,60,.10)';c.fillRect(0,0,W,H);c.fillStyle='rgba(190,210,255,.65)';for(let i=0;i<110;i++){const x=(i*97+T*70)%W,y=(i*53+T*460)%H;c.fillRect(x|0,y|0,1,7);}}
+  if(w==='sno'){c.fillStyle='rgba(225,235,255,.10)';c.fillRect(0,0,W,H);c.fillStyle='rgba(255,255,255,.9)';for(let i=0;i<130;i++){const y=(i*61+T*(28+(i%5)*6))%H,x=(i*89+Math.sin(T*1.3+i)*14+W)%W;c.fillRect(x|0,y|0,2,2);}}
+  if(w==='klart'&&!TRIP.dark){c.fillStyle='rgba(255,230,160,.06)';c.fillRect(0,0,W,H);}}
+function windowDraw(c){if(!TRIP)return;const x0=20,y0=54,w=124,h=118;
+  c.fillStyle=TRIP.dark?'rgba(10,15,45,.55)':'rgba(255,240,200,.12)';c.fillRect(x0,y0,w,h);
+  if(TRIP.w==='regn'){c.fillStyle='rgba(190,210,255,.8)';for(let i=0;i<26;i++){const x=x0+(i*37)%w,y=y0+(i*23+T*200)%h;c.fillRect(x|0,y|0,1,6);}}
+  if(TRIP.w==='sno'){c.fillStyle='#fff';for(let i=0;i<30;i++){const x=x0+(i*41+Math.sin(T+i)*6+w)%w,y=y0+(i*29+T*24)%h;c.fillRect(x|0,y|0,2,2);}}
+  if(TRIP.w==='klart'&&!TRIP.dark){c.fillStyle='rgba(255,220,90,.9)';c.fillRect(x0+w-30,y0+12,16,16);}}
+function windowText(){if(!TRIP)return 'Det ser kaldt ut ute.';const lys=TRIP.dark?'Det er mørkt ute':'Det er lyst ute';
+  const v={skyet:'og overskyet. Kanskje det kommer en regnskur.',regn:'og det regner.',sno:'og det snør!',klart:'og himmelen er klar.'}[TRIP.w];
+  return lys+' '+v+(TRIP.dark?' I mørket er refleks viktig.':' Når det er lyst, ser sjåførene deg lettere. Men refleks er lurt likevel.')+(TRIP.w==='regn'?' Da trenger du jakke.':TRIP.w==='sno'?' Da trenger du både jakke og lue.':'');}
+function wetTick(dt){if(!TRIP||S.wet||S.mode!=='route'||!OUTDOOR.includes(S.scene)||S.scene==='ute')return;if(!(TRIP.w==='regn'||TRIP.w==='sno')||S.has.jakke)return;
+  S.wetT=(S.wetT||0)+dt;if(S.wetT>5){S.wet=true;if(TRIP.w==='regn'){penal('vat',5,'Ble søkkvåt uten jakke');say('Brrr! Det regner, og jeg har ikke jakke. Nå er jeg søkkvåt.');}else{penal('vat',5,'Frøs i snøen uten jakke');say('Brrr! Det snør, og jeg har ikke jakke. Jeg fryser!');}}}
+
+/* buss ved Kiwi */
+function drawBus(c,x,yb){x=Math.round(x);c.fillStyle='rgba(0,0,0,.35)';c.fillRect(x+3,yb-3,148,5);
+  R(c,x,yb-52,150,44,'#c8261c');R(c,x,yb-52,150,3,'#ee5a48');R(c,x,yb-12,150,4,'#7a1610');R(c,x+2,yb-30,146,2,'#a01e16');
+  for(let i=0;i<6;i++){R(c,x+10+i*20,yb-46,16,15,'#24303c');if(i%2===0){R(c,x+15+i*20,yb-41,6,6,i%4?'#e8c873':'#7a4a20');R(c,x+14+i*20,yb-35,8,4,i%4?'#2a8a2a':'#3366cc');}}
+  R(c,x+132,yb-46,15,30,'#9fd0e8');R(c,x+134,yb-44,3,26,'#d8f0ff');R(c,x+92,yb-28,14,20,'#24303c');R(c,x+98,yb-28,1,20,'#888');
+  R(c,x+6,yb-51,46,5,'#111');txt(c,'OSLO',x+10,yb-51,'#ff9a30',1);
+  for(const dx of [22,116]){R(c,x+dx-7,yb-13,16,12,'#1a1a1a');R(c,x+dx-3,yb-10,8,6,'#9a9a9a');}
+  R(c,x+147,yb-20,3,5,'#ffffaa');R(c,x,yb-20,3,5,'#ee2020');
+  if(X&&X.bus&&X.bus.st==='stand'&&(T*2|0)%2)R(c,x+145,yb-26,4,3,'#ffb020');}
+function busStand(){return X&&X.bus&&X.bus.st==='stand';}
+function busTick(dt){const b=X.bus;if(!b)return;
+  if(b.st==='stand'){if(X.st==='bus'){b.t+=dt;if(b.t>5.5){b.st='go';b.v=10;say('Bussen kjører. Bli stående til du ser veien igjen.');}}}
+  else{b.v=Math.min(120,b.v+60*dt);b.x+=b.v*dt*vF();if(b.x>720){X.bus=null;if(X.st==='bus'){X.st='waiting';X.w=0;X.phase=0;if(!X.busMiss)award('buss');say('Bussen har kjørt. Nå ser du veien igjen. Se til venstre og høyre.');}}}}
+function oopsBus(){S.roadMistake=true;X.busMiss=true;X.here=true;X.hold=1.4;SFX.honk();SFX.brake();K.path=[{x:K.x,y:X.cfg.roadTop+4},{x:X.cfg.curbX,y:X.cfg.curbY}];K.cb=null;
+  X.st='idle';setTimeout(()=>talk('politi','STOPP, Kristoffer! Bussen står i veien, så du ser ikke bilene som kommer bak den. Og sjåførene ser ikke deg. Vent til bussen har kjørt, så ser du hele veien.',()=>{if(!X)return;K.path=[];K.x=X.cfg.curbX;K.y=X.cfg.curbY;startWait();}),450);}
+
+/* bil som ikke stopper */
+function pickRude(){const cfg=X.cfg;let best=null,bd=1e9;
+  for(const c of X.cars){const L=cfg.lanes[c.lane];const d=L.dir>0?L.stop-c.x:c.x-L.stop;if(d<70||d>340)continue;
+    const blocked=X.cars.some(o=>o!==c&&o.lane===c.lane&&(L.dir>0?o.x>c.x&&o.x<L.stop+60:o.x<c.x&&o.x>L.stop-60));if(!blocked&&d<bd){bd=d;best=c;}}
+  if(!best){for(const li of shuffle([0,1])){const L=cfg.lanes[li];if(X.cars.some(o=>o.lane===li&&(L.dir>0?o.x<L.stop+60&&o.x>-80:o.x>L.stop-60&&o.x<720)))continue;
+      best={x:L.dir>0?-40:680,lane:li,dir:L.dir,yb:L.yb,v:112,col:pick(CARCOL),wave:false};X.cars.push(best);break;}}
+  if(!best)return;best.rude=true;best.v=Math.max(best.v,108);X.rude=best;}
+function rudeTick(){const cfg=X.cfg,c=X.rude;if(!c||X.rudePassed)return false;
+  const L=cfg.lanes[c.lane];const front=L.dir>0?c.x+52:c.x;const d=L.dir>0?cfg.zx0-front:front-cfg.zx1;const past=L.dir>0?c.x>cfg.zx1+6:c.x+52<cfg.zx0-6;
+  if(!X.rudeSaid&&d<190){X.rudeSaid=true;SFX.honk();say('Se! Den bilen bremser ikke!');}
+  if(past||!X.cars.includes(c)){X.rudePassed=true;X.w2=0;if(!X.here)award('rude');say('Den bilen stoppet ikke! Derfor venter du alltid til bilen står helt stille, selv om du har refleks.');}
+  return !X.rudePassed;}
+
+/* gravemaskin på sykkelstien */
+const BZ={x0:196,x1:288,y0:318};
+function drawDigger(c){
+  R(c,190,388,112,9,'#1a1a1a');for(let i=0;i<8;i++)R(c,194+i*13,390,6,5,'#555');
+  R(c,208,354,70,34,'#f0b020');R(c,208,354,70,3,'#ffd060');R(c,208,384,70,4,'#b07810');txt(c,'JCB',220,370,'#222',2);
+  R(c,256,334,26,30,'#f0b020');R(c,259,338,19,16,'#9fd0e8');R(c,261,340,3,12,'#d8f0ff');R(c,266,343,6,6,'#e8c873');
+  line(c,226,358,214,322,5,'#e0a018');line(c,214,322,196,326,4,'#e0a018');R(c,186,322,16,12,'#555');R(c,184,332,20,3,'#333');
+  R(c,280,330,3,6,(T*3|0)%2?'#ff8a20':'#7a4010');
+  for(const x of [BZ.x0,BZ.x0+30,BZ.x0+60,BZ.x1-2]){R(c,x-5,338,12,3,'#222');for(let i=0;i<14;i++)R(c,x-Math.floor(i/3)+1,324+i,Math.floor(i/1.5)+2,1,i%6<3?'#ff6a10':'#ffffff');}
+  for(let x=BZ.x0;x<BZ.x1;x+=12)R(c,x,326,8,3,(x/12|0)%2?'#e02020':'#ffffff');}
+function gravTick(){if(!TRIP||!TRIP.grav)return;
+  if(K.px==null){K.px=K.x;K.py=K.y;}
+  const inZ=K.x>BZ.x0-8&&K.x<BZ.x1+8&&K.y>BZ.y0;
+  if(inZ){K.x=K.px;K.y=K.py;const tg=K.path[K.path.length-1];if(tg&&tg.y<BZ.y0){K.path=[{x:K.x,y:BZ.y0-8}].concat(K.path);}else{K.path=[];K.cb=null;if(!S.flags.gravT||T-S.flags.gravT>5){S.flags.gravT=T;say('Gravemaskinen jobber på gå-stripa. Se deg bak etter sykler, og gå rundt i sykkelfeltet når det er klart.');}}}
+  if(!S.flags.gravLane&&K.y<BZ.y0&&K.x>BZ.x0-50&&K.x<BZ.x1+10){S.flags.gravLane=true;say('Nå går du i sykkelfeltet. Lytt etter bjella og gå raskt forbi!');}
+  if(!S.flags.gravDone&&K.x>BZ.x1+14){S.flags.gravDone=true;if(!S.pathMistake){award('grav');say('Bra! Du gikk trygt rundt gravemaskinen. Gå helt til høyre igjen.');}}
+  K.px=K.x;K.py=K.y;}
+
+/* kobling til scenene */
+{const sy=SC.sykkel,u0=sy.update,d0=sy.dyn,e0=sy.enter,i0=sy.intro;
+  sy.update=function(dt){u0.call(this,dt);gravTick();};
+  sy.dyn=function(c){if(d0)d0.call(this,c);if(TRIP&&TRIP.grav)drawDigger(c);};
+  sy.enter=function(e){e0.call(this,e);K.px=null;};
+  const hn=sy.hint;sy.hint=function(){if(TRIP&&TRIP.grav&&K.x<BZ.x1+14)talk('politi','Gravemaskinen står på gå-stripa. Se deg bak etter sykler. Når ingen kommer, går du opp i sykkelfeltet, forbi gravemaskinen og tilbake til høyre.');else hn.call(this);};
+  sy.intro=function(){if(TRIP&&TRIP.grav)say('Sykkelstien! I dag jobber en gravemaskin på gå-stripa. Gå helt til høyre, og lytt etter sykkelbjella.');else i0.call(this);};}
+{const ki=SC.kiwi,i0=ki.intro,h=ki.hot.find(q=>q.x===410);const a0=h.act;
+  ki.intro=function(){if(TRIP&&TRIP.bus)say('Her er Kiwi. Se, bussen står ved fotgjengerfeltet. Gå bort til kanten og stå stille.');else i0.call(this);};
+  const hn=ki.hint;ki.hint=function(){if(busStand()&&X.side==='top')talk('politi','Bussen står ved fotgjengerfeltet. Stå stille ved kanten og vent til bussen har kjørt. Da ser du bilene, og bilene ser deg.');else hn.call(this);};
+  h.act=function(){if(busStand()&&X.side==='top')talk('politi','Hei, Kristoffer! Når bussen står ved fotgjengerfeltet, ser du ikke bilene bak den. Vent til bussen har kjørt.');else a0.call(this);};}
+{const hj=SC.hjem,win=hj.hot.find(q=>q.x===14&&q.look);win.act=function(){talk(null,windowText());};const d0=hj.dyn;hj.dyn=function(c){windowDraw(c);d0.call(this,c);};}
+{const he=SC.hester,u0=he.update,t0=he.top;
+  he.update=function(dt){if(TRIP&&TRIP.w!=='skyet'){S.rainT=-999;S.flags.rainSaid=true;}u0.call(this,dt);};}
+
+/* ---------- S5: Malin og klassen i live ---------- */
+const MAL={x:78,tx:78,bob:0,mood:null,moodT:0,idleT:4};
+const KNAMES=['Emma','Noah','Sara','Ali'];
+const KST=KNAMES.map(()=>({hand:0,cheer:0}));
+function malReact(ok,big){MAL.mood=ok?'happy':'think';MAL.moodT=ok?1.4:1.8;
+  if(ok){const n=big?4:(Math.random()<.5?1:2);shuffle([0,1,2,3]).slice(0,n).forEach(i=>KST[i].cheer=1.2);}}
+function malUpd(dt){if(MAL.moodT>0){MAL.moodT-=dt;if(MAL.moodT<=0)MAL.mood=null;}
+  MAL.idleT-=dt;if(MAL.idleT<=0){MAL.idleT=5+Math.random()*6;MAL.tx=62+Math.random()*40;}
+  const dx=MAL.tx-MAL.x;if(Math.abs(dx)>.5){MAL.x+=Math.sign(dx)*Math.min(Math.abs(dx),22*dt);MAL.bob=Math.abs(Math.sin(T*9))*2;}else MAL.bob=0;
+  for(const k of KST){if(k.hand>0)k.hand-=dt;if(k.cheer>0)k.cheer-=dt;}
+  if(CL&&CL.stage==='task'&&!CL.flash&&CL.wait<=0&&Math.random()<dt*.06){const i=rnd(0,3);if(KST[i].hand<=0)KST[i].hand=1.6;}}
+function malMood(){const x=MAL.x,f=348-MAL.bob;
+  if(MAL.mood==='happy'){for(let i=0;i<3;i++){const a=T*3+i*2.1;star(x+Math.cos(a)*26,f-128+Math.sin(a)*14,4.5,true);}}
+  if(MAL.mood==='think'){circ(x+34,f-130,11,'#ffffff');hx.strokeStyle='#2a2a2a';hx.lineWidth=1.2;hx.beginPath();hx.arc(x+34,f-130,11,0,6.283);hx.stroke();circ(x+21,f-120,2.5,'#ffffff');setF(16,true);hx.fillStyle='#c0392b';hx.textAlign='center';hx.textBaseline='middle';hx.fillText('?',x+34,f-129);}}
+function kidArm(i,x,skin,top){const k=KST[i];const up=k.cheer>0?2:k.hand>0?1:0;if(!up)return;
+  const arm=(sx,ex,ey)=>{hx.lineCap='round';hx.strokeStyle=top;hx.lineWidth=7;hx.beginPath();hx.moveTo(sx,312);hx.lineTo(ex,ey);hx.stroke();circ(ex,ey-2,5,skin);};
+  const wob=up===2?Math.sin(T*14)*3:0;arm(x+14,x+19,272+wob);if(up===2)arm(x-14,x-19,272-wob);}
+function kidTags(){[[232,0],[304,1],[458,2],[532,3]].forEach(([x,i])=>{fRR(x-26,352,52,12,3,'#fffdf4');chalk(KNAMES[i],x,358.5,10,'#2a2a2a','center',true);});}
+
+/* hoderegningskamp mot klassen */
+const RACE_N=8;
+function raceLevel(){return Math.max(0,((PROG.matte&&PROG.matte.open)||1)-1);}
+function raceQ(){const L=raceLevel();let a,b,op;
+  const T2=()=>{const f=pick(L<=5?[2,5,10]:L<=9?[2,3,4,5,6,7,8,9,10]:[3,4,6,7,8,9,11,12]);const n=rnd(2,L<=9?10:12);return Math.random()<(L<=5?1:.6)?[n,'·',f]:[n*f,':',f];};
+  if(L<=1){op=pick(['+','−']);if(op==='+'){a=rnd(1,6);b=rnd(1,10-a);}else{a=rnd(3,10);b=rnd(1,a-1);}}
+  else if(L<=3){op=pick(['+','−']);if(op==='+'){a=rnd(5,14);b=rnd(2,20-a);}else{a=rnd(11,20);b=rnd(2,9);}}
+  else if(L<=5){const k=rnd(0,2);if(k===0){op='+';a=rnd(1,7)*10;b=rnd(1,9-a/10)*10;}else if(k===1){op=pick(['+','−']);a=rnd(21,89);b=op==='+'?rnd(1,9-a%10):rnd(1,a%10||1);if(op==='−'&&a%10===0){op='+';b=rnd(1,9);}}else[a,op,b]=T2();}
+  else if(L<=9){const k=rnd(0,2);if(k<2)[a,op,b]=T2();else{op=pick(['+','−']);a=rnd(25,95);b=rnd(11,a-11);if(op==='+')b=rnd(11,99-a<11?11:99-a);}}
+  else{const k=rnd(0,3);if(k<2)[a,op,b]=T2();else if(k===2){op='·';a=pick([25,50,15,12,20]);b=pick([2,4,3,5]);}else{op=pick(['+','−']);a=rnd(120,480);b=rnd(110,a-10);if(op==='+')b=rnd(110,480);}}
+  const ans=op==='+'?a+b:op==='−'?a-b:op==='·'?a*b:a/b;const ow={'+':'pluss','−':'minus','·':'ganger',':':'delt på'}[op];
+  return{q:a+' '+op+' '+b,a:ans,say:a+' '+ow+' '+b};}
+function raceBase(){const L=raceLevel();return L<=1?5:L<=3?5.5:L<=5?6:L<=9?6:7;}
+const RACEF=[1.4,1.18,1.0,.88];
+function raceStart(){const p=PR();CL.stage='race';CL.race={i:-1,me:0,k:[0,0,0,0],A:p.raceA||1.3,st:'intro',t:0,task:null,lock:0};SFX.chime();
+  say('Hoderegningskamp mot klassen! Jeg sier et regnestykke. Den som først har riktig svar, får poenget. Skriv svaret og trykk OK.');}
+function raceNext(){const R=CL.race;R.i++;if(R.i>=RACE_N){raceEnd();return;}const q=raceQ();R.task=numTask(q.q,q.a,q.say);R.t=0;R.st='q';R.who=null;R.tried=[0,0,0,0];
+  R.kt=RACEF.map(f=>raceBase()*f*R.A*(.75+Math.random()*.5));CL.flash=null;say(q.say+'?');}
+function raceWin(who){const R=CL.race;R.st='show';R.t=0;R.who=who;R.task.inp=String(R.task.ans);
+  if(who===-1){R.me++;CL.flash={ok:true,pick:-1,t:1.2};SFX.count();malReact(true);say(pick(['Riktig! Poeng til deg!','Du var raskest!','Ja! Riktig!']));}
+  else{R.k[who]++;KST[who].hand=1.8;CL.flash=null;say(KNAMES[who]+' rakk opp hånda først. '+R.task.ans+' er riktig!');}}
+function raceUpd(dt){const R=CL&&CL.race;if(!R||CL.stage!=='race')return;R.t+=dt;if(R.lock>0)R.lock-=dt;
+  if(R.st==='intro'&&R.t>4.2)raceNext();
+  else if(R.st==='q'){for(let i=0;i<4;i++){if(!R.tried[i]&&R.t>=R.kt[i]){R.tried[i]=1;KST[i].hand=1.2;if(Math.random()<.85){raceWin(i);return;}say(KNAMES[i]+' svarte feil. Du har fortsatt sjansen!');}}
+    if(R.t>30){R.st='show';R.t=0;R.who=-2;R.task.inp=String(R.task.ans);say('Svaret er '+R.task.ans+'.');}}
+  else if(R.st==='show'&&R.t>2)raceNext();}
+function raceEnd(){const R=CL.race,p=PR();R.st='end';const best=Math.max(...R.k);const win=R.me>best,tie=R.me===best;
+  p.raceA=clamp(R.A*(win?.88:tie?1:1.12),.55,2.4);p.raceBest=Math.max(p.raceBest||0,R.me);saveDB();
+  const rank=1+R.k.filter(v=>v>R.me).length;let msg='Du fikk '+R.me+' av '+RACE_N+' poeng og kom på '+rank+'. plass.';
+  if(win){msg+=' Du vant hoderegningskampen!';SFX.fanfare();zStk('hode_vinner');malReact(true,true);}else if(tie)msg+=' Delt førsteplass!';else msg+=' Neste gang går det fortere. Øv på gangetabellen på mestringskartet!';
+  say(msg);}
+const RACEB=[{x:BC-165,y:200,w:150,h:34},{x:BC+15,y:200,w:150,h:34}];
+function raceDraw(){const R=CL.race;if(!R)return;
+  const sc=[['Du',R.me,true]].concat(KNAMES.map((n,i)=>[n,R.k[i],false]));let x=BX+16;
+  setF(13,true);sc.forEach(s=>{const t=s[0]+' '+s[1];const w=hx.measureText(t).width+14;fRR(x,BY+8,w,20,10,s[2]?'rgba(255,227,106,.25)':'rgba(255,255,255,.08)');chalk(t,x+w/2,BY+18.5,13,s[2]?'#ffe36a':'#f5f9f3','center',true);x+=w+6;});
+  if(R.st!=='end'&&R.i>=0)chalk('Oppgave '+(R.i+1)+' av '+RACE_N,BX+BW-14,BY+18.5,12,'#a8d8b8','right',true);
+  if(R.st==='intro'){chalk('⚡ Hoderegningskamp',BC,92,30,'#ffe36a','center',true);const n=Math.ceil(4.2-R.t);chalk(n<=3&&n>0?String(n):'Gjør deg klar!',BC,150,n<=3&&n>0?60:24,'#ffffff','center',true);return;}
+  if(R.st==='end'){chalk('Resultat',BC,64,24,'#ffe36a','center',true);
+    sc.slice().sort((a,b)=>b[1]-a[1]).forEach((s,i)=>chalk((i+1)+'. '+s[0]+'  '+s[1]+' poeng',BC,96+i*20,16,s[2]?'#ffe36a':'#f5f9f3','center',s[2]));
+    RACEB.forEach((r,i)=>{card(r);chalk(['Spill igjen','Tilbake'][i],r.x+r.w/2,r.y+r.h/2+1,16,'#ffffff','center',true);});return;}
+  numDraw(R.task);if(R.st==='show'&&R.who>=0)chalk('✋ '+KNAMES[R.who]+' var først',BC,BY+BH-12,13,'#ffb0b0','center',true);}
+function raceTap(x,y){const R=CL.race;if(!R)return;
+  if(R.st==='end'){if(hit(RACEB[0],x,y))raceStart();else if(hit(RACEB[1],x,y)){CL.stage='choose';CL.race=null;say('Velg fag.');}return;}
+  if(R.st!=='q'||R.lock>0)return;const t=R.task;const key=numKeys(t).find(r=>hit(r,x,y));if(!key)return;tone(880,.03,{type:'square'});
+  if(key.k==='⌫'){t.inp=t.inp.slice(0,-1);return;}
+  if(key.k==='OK'){if(!t.inp)return;if(numEq(t.inp,t.ans))raceWin(-1);else{CL.flash={ok:false,pick:-1,t:.6};t.wrongShown=t.inp;t.inp='';R.lock=.8;SFX.brake();malReact(false);say('Nei, prøv igjen!');}return;}
+  if(t.inp.length<6)t.inp=(t.inp==='0'?'':t.inp)+key.k;}
+
+/* ---------- S2: ukens sjakkturnering mot klassen ---------- */
+const TURNO=[
+ {id:'emma',n:'Emma',short:'Emma',e:'🙂',col:'#e07aa0',d:1,q:false,noise:140,rnd:.22,undo:true,s:'Lærte sjakk i sommer',
+  hello:['Hei! Jeg har lært hvordan alle brikkene går.','Jeg håper jeg husker hvordan hesten hopper.'],cap:['Jeg tok en!'],lost:['Å nei!','Den passet jeg ikke på.'],check:['Sjakk!'],inCheck:['Oi, kongen min!'],win:'Emma vant og danser rundt pulten.',lose:'Emma sier godt spilt og vil ha omkamp neste uke.',draw:'Emma sier uavgjort er helt greit.'},
+ {id:'noah',n:'Noah',short:'Noah',e:'😄',col:'#3a9a5a',d:1,q:true,noise:70,rnd:.08,undo:true,s:'Spiller sjakk med storebroren sin',
+  hello:['Storebroren min har lært meg et lurt triks.','Klar? Jeg er klar.'],cap:['Takk!','Den tar jeg.'],lost:['Hm.','Godt sett!'],check:['Sjakk!'],inCheck:['Oj, oj.'],win:'Noah vant. Han skal fortelle det til storebroren.',lose:'Noah gir deg en high five.',draw:'Noah sier uavgjort. Det var spennende!'},
+ {id:'sara',n:'Sara',short:'Sara',e:'🤓',col:'#2f6fd0',d:2,q:true,noise:40,rnd:.04,undo:false,s:'Er med i sjakklubben',
+  hello:['Jeg begynner å forstå åpninger.','Pass på brikkene som står alene.'],cap:['Den sto ubeskyttet.'],lost:['Den så jeg ikke.'],check:['Sjakk.'],inCheck:['Lurt!'],win:'Sara vant. Hun sier du skal se etter brikker som står alene.',lose:'Sara sier du spilte som en ekte sjakkspiller.',draw:'Sara sier uavgjort mot henne er bra.'},
+ {id:'ali',n:'Ali',short:'Ali',e:'😎',col:'#c8961c',d:2,q:true,noise:14,rnd:.01,undo:false,s:'Klassens beste sjakkspiller',
+  hello:['Jeg har ikke tapt på tre uker.','Dette blir et godt parti.'],cap:['Der falt en brikke.'],lost:['Oi! Godt trekk.'],check:['Sjakk!'],inCheck:['Hm, du er god.'],win:'Ali vant. Han sier du ble vanskeligere å slå.',lose:'Du slo Ali! Hele klassen klapper.',draw:'Uavgjort mot Ali! Det er sterkt.'}];
+const TSTR=[.35,.5,.62,.75];
+const TURN_NEED=2;
+function wkNo(){return Math.floor((today()+3)/7);}
+function turnState(){const p=PR();if(!p.turn||p.turn.wk!==wkNo())p.turn={wk:wkNo(),r:0,res:[],mods:0,opp:[0,0,0,0],done:false,intro:false};return p.turn;}
+function turnNeed(T){return TURN_NEED*(T.r+1);}
+function turnOpen(T){return !T.done&&T.mods>=turnNeed(T);}
+function turnMe(T){return T.res.reduce((a,b)=>a+b,0);}
+function turnMod(){if(!DB)return '';const T=turnState();if(T.done)return '';const was=turnOpen(T);T.mods++;saveDB();
+  if(!was&&turnOpen(T))return ' Nå kan du spille runde '+(T.r+1)+' i ukens sjakkturnering mot '+TURNO[T.r].n+'!';
+  if(!turnOpen(T)){const left=turnNeed(T)-T.mods;return ' '+(left===1?'Én modul':left+' moduler')+' til, så kan du spille neste runde i sjakkturneringen.';}return '';}
+function turnPlay(){const T=turnState();if(!turnOpen(T))return;const o=TURNO[T.r];sjStart(o.id,o);SJ.turn=true;SJ.info='Runde '+(T.r+1)+' i ukens turnering. Du er hvit og begynner.';}
+function turnEnd(P){const T=turnState();const R=P.res;const sc=R==='win'?1:(R==='loss'||R==='opp')?0:.5;const r=T.r;
+  T.res.push(sc);T.opp[r]+=1-sc;for(let i=0;i<4;i++){if(i===r)continue;const x=Math.random();T.opp[i]+=x<TSTR[i]?1:x<TSTR[i]+.12?.5:0;}
+  T.r++;let msg=(sc===1?'Du vant mot '+P.o.n+'! '+P.o.lose:sc===0?P.o.short+' vant denne gangen. '+P.o.win:'Uavgjort mot '+P.o.n+'. '+P.o.draw);
+  if(T.r>=4){T.done=true;const me=turnMe(T);const best=Math.max(...T.opp);zStk('turn_ferdig');
+    if(me>=best){zStk('turn_vinner');zGive(3);msg+=' Turneringen er ferdig, og du vant med '+fmtP(me)+' poeng! Det gir tre billetter og et pokal-klistremerke.';}
+    else msg+=' Turneringen er ferdig. Du fikk '+fmtP(me)+' poeng og ble nummer '+(1+T.opp.filter(v=>v>me).length)+'. Ny turnering på mandag!';}
+  else msg+=' Neste runde er mot '+TURNO[T.r].n+'. Gjør '+TURN_NEED+' moduler til for å låse den opp.';
+  saveDB();ask('laerer',msg,['Til klasserommet'],()=>{SJ=null;backToClass('turn');});}
+function fmtP(v){return String(v).replace('.5',',5');}
+function backToClass(stage){setScene('klasse','in');if(!CL)CL={stage:'choose',subj:null,lvl:0,tasks:[],i:0,tries:0,firstOk:0,modBonus:0,flash:null,wait:0,after:null};CL.stage=stage||'choose';CL.wait=0;CL.after=null;}
+const TPLAY={x:BC-150,y:196,w:300,h:30};
+function turnDraw(){const T=turnState();chalk('♞ Ukens sjakkturnering',BC,44,20,'#ffe36a','center',true);
+  chalk('Runde '+Math.min(4,T.r+(T.done?0:1))+' av 4 · alle spiller mot alle i klassen',BC,66,12,'#a8d8b8','center');
+  const rows=[['Du',turnMe(T),true]].concat(TURNO.map((o,i)=>[o.n,T.opp[i],false])).sort((a,b)=>b[1]-a[1]||(b[2]?1:0)-(a[2]?1:0));
+  rows.forEach((r,i)=>{const y=86+i*20;fRR(BC-120,y-8,240,17,6,r[2]?'rgba(255,227,106,.2)':'rgba(255,255,255,.05)');chalk((i+1)+'.',BC-104,y+1,13,'#f5f9f3','center',true);chalk(r[0],BC-86,y+1,13,r[2]?'#ffe36a':'#f5f9f3','left',true);chalk(fmtP(r[1])+' p',BC+108,y+1,13,'#f5f9f3','right',true);});
+  if(T.done){chalk(turnMe(T)>=Math.max(...T.opp)?'🏆 Du vant turneringen!':'Turneringen er ferdig. Ny turnering på mandag!',BC,TPLAY.y+15,15,'#ffe36a','center',true);}
+  else if(turnOpen(T)){card(TPLAY);chalk('Spill runde '+(T.r+1)+' mot '+TURNO[T.r].n+' ▸',TPLAY.x+TPLAY.w/2,TPLAY.y+16,16,'#ffffff','center',true);}
+  else{const need=turnNeed(T),have=T.mods-(need-TURN_NEED);chalk('Gjør '+TURN_NEED+' moduler for å låse opp runde '+(T.r+1)+' mot '+TURNO[T.r].n,BC,TPLAY.y+8,13,'#f5f9f3','center');
+    for(let i=0;i<TURN_NEED;i++)star(BC-10+i*20-(TURN_NEED-2)*10,TPLAY.y+26,7,i<have);}
+  card(BACKR);chalk('Tilbake',BACKR.x+BACKR.w/2,BACKR.y+11,12,'#f5f9f3');}
+function turnTap(x,y){if(hit(BACKR,x,y)){CL.stage='choose';say('Velg fag.');return;}const T=turnState();
+  if(turnOpen(T)&&hit(TPLAY,x,y)){SFX.chime();turnPlay();return;}
+  if(!T.done&&!turnOpen(T)&&y>TPLAY.y-10&&y<TPLAY.y+40){const left=turnNeed(T)-T.mods;say('Gjør '+(left===1?'én modul':left+' moduler')+' til, i hvilket som helst fag. Da kan du spille mot '+TURNO[T.r].n+'.');}}
+function turnOpenStage(){const T=turnState();CL.stage='turn';SFX.chime();
+  if(T.done)say('Denne ukas turnering er ferdig. En ny starter på mandag.');
+  else if(turnOpen(T))say('Du kan spille runde '+(T.r+1)+' mot '+TURNO[T.r].n+'. Trykk på knappen!');
+  else say('Ukens sjakkturnering! Du spiller mot alle i klassen, én runde om gangen. For hver runde må du først gjøre '+TURN_NEED+' moduler. Da er hjernen varm!');}
+
+/* klasserommet: knapper under fagkortene */
+const XB=[{x:BC-215,y:218,w:210,h:28},{x:BC+5,y:218,w:210,h:28}];
+function f3ChooseDraw(){const TS=DB?turnState():null;
+  card(XB[0]);chalk('⚡ Hoderegning mot klassen',XB[0].x+XB[0].w/2,XB[0].y+15,13,'#ffe36a','center',true);
+  card(XB[1]);const lbl=!TS?'♞ Ukens sjakkturnering':TS.done?'🏆 Turneringen er ferdig':turnOpen(TS)?'♞ Runde '+(TS.r+1)+' er klar!':'♞ Turnering: runde '+(TS.r+1)+' av 4';
+  chalk(lbl,XB[1].x+XB[1].w/2,XB[1].y+15,13,'#ffe36a','center',true);
+  if(TS&&turnOpen(TS)&&(performance.now()/400|0)%2)circ(XB[1].x+XB[1].w-10,XB[1].y+8,5,'#ff5a5a');}
+function f3ChooseTap(x,y){if(hit(XB[0],x,y)){raceStart();return true;}if(hit(XB[1],x,y)){turnOpenStage();return true;}return false;}
+function f3Upd(dt){malUpd(dt);raceUpd(dt);}
+STK.push(['turn_ferdig','♞','Turneringsspiller','Spilte alle rundene i ukens sjakkturnering'],['turn_vinner','🏆','Turneringsvinner','Vant ukens sjakkturnering mot klassen'],['hode_vinner','⚡','Lynrask','Vant hoderegningskampen mot klassen']);
+
+{const i0=initX;initX=function(id,side){i0(id,side);if(TRIP&&id==='kiwi'&&side==='top'&&TRIP.bus)X.bus={x:132,st:'stand',t:0,v:0};};}
 
 addEventListener('resize',fit);addEventListener('orientationchange',()=>setTimeout(fit,200));
 
