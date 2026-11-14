@@ -1,0 +1,10 @@
+{
+  "name": "kristoffers-skolevei",
+  "private": true,
+  "type": "module",
+  "description": "Lærespill for iPad. Ingen byggesteg: filene serveres som de er.",
+  "scripts": {
+    "test": "node tests/run.mjs",
+    "test:browser": "node tests/smoke.mjs"
+  }
+}
