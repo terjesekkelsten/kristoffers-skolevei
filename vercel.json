@@ -4,6 +4,9 @@
   "outputDirectory": ".",
   "headers": [
     {"source": "/sw.js", "headers": [{"key": "Cache-Control", "value": "no-cache"}]},
-    {"source": "/(index.html|js/(.*)|css/(.*))", "headers": [{"key": "Cache-Control", "value": "no-cache"}]}
+    {"source": "/", "headers": [{"key": "Cache-Control", "value": "no-cache"}]},
+    {"source": "/index.html", "headers": [{"key": "Cache-Control", "value": "no-cache"}]},
+    {"source": "/js/:file*", "headers": [{"key": "Cache-Control", "value": "no-cache"}]},
+    {"source": "/css/:file*", "headers": [{"key": "Cache-Control", "value": "no-cache"}]}
   ]
 }
