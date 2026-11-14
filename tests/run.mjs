@@ -57,6 +57,11 @@ for(const [n,b] of Object.entries(banks))ok(b.length>=30,'bank '+n+' har bare '+
 ok(D.LES_NO.length*3>=30&&D.LES_EN.length*3>=30,'for få lesespørsmål');
 for(const H of [D.NO_HI,D.EN_HI])for(const [k,v] of Object.entries(H))ok(v.d.length>=30,'bank for modul '+k+' har bare '+v.d.length);
 ok(D.KLASS.reduce((s,k)=>s+k[2].length,0)>=30,'ordklasser har under 30');
+// 3b. alt barnet skal skrive selv, må finnes på tastaturet (sjekkes for hele banken, ikke bare tilfeldige trekk)
+for(const w of [...D.DIKT1.map(x=>x[0]),...D.DIKT2.map(x=>x[0]),...D.DIKT3,...D.ENW.map(x=>x[0]),...Object.keys(D.COLS),...D.NUMEN.slice(1,21),...D.DAYS.map(d=>d[1])])
+  ok(w&&[...norm(w)].every(c=>KEYS.has(c)),'ord med tegn som ikke finnes på tastaturet: '+w);
+for(const s of [...D.BYGG_NO1,...D.BYGG_NO2,...D.BYGG_EN1,...D.BYGG_EN2])ok(s===s.trim()&&!/\s\s/.test(s)&&s.split(' ').length>=3,'setning å bygge er ugyldig: '+s);
+for(const L of [...D.LES_NO,...D.LES_EN]){ok(L.t&&L.q.length===3,'lesetekst mangler spørsmål');for(const q of L.q)ok(q[0]&&q[1]&&q[2].length===2&&!q[2].includes(q[1]),'lesespørsmål er ugyldig: '+q[0]);}
 // 4. sjakkoppgaver: alle matt i 1 har matt, alle matt i 2 tvinger matt
 for(const f of D.M1)ok(mateMoves(sjNew(f)).length>0,'M1 uten matt: '+f);
 for(const e of D.M2){const s=sjNew(e[0]);ok(mateMoves(s).length===0,'M2 har matt i 1: '+e[0]);
